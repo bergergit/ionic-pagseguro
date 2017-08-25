@@ -1,0 +1,10 @@
+.pagseguro .segment-ios ion-segment-button { 
+    height: 56px;
+}
+.pagseguro .segment-md ion-segment-button { 
+    height: 70px;
+}
+
+.pagseguro label { 
+    display: block;
+} 

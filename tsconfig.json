@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "noUnusedLocals": true,
     "baseUrl": "./src",
     "experimentalDecorators": true,
     "moduleResolution": "node",

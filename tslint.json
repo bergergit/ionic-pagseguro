@@ -3,6 +3,9 @@
     "node_modules/codelyzer"
   ],
   "rules": {
+    "no-unused-variable": [
+      false
+    ],
     "class-name": true,
     "comment-format": [
       true,
@@ -47,7 +50,7 @@
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
     "no-unused-expression": true,
-    "no-unused-variable": true,
+    //"no-unused-variable": true,
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "object-literal-sort-keys": false,

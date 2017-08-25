@@ -3,10 +3,10 @@ import { PagSeguroDefaultOptions } from './pagseguro.defaults';
 import { RequestOptions, Http, Headers, Response } from '@angular/http';
 import { PagSeguroOptions } from './pagseguro.options';
 import { Observable } from "rxjs/Observable";
+ 
 import 'rxjs/add/operator/map';
 
-
-declare var PagSeguroDirectPayment:any;
+//declare var PagSeguroDirectPayment:any;
 
 @Injectable()
 export class PagSeguroService {
@@ -21,7 +21,7 @@ export class PagSeguroService {
   public setOptions(options: PagSeguroOptions) {
     this.options = Object.assign(PagSeguroDefaultOptions, options);
   }
-
+  
   /**
    * Carrega o <script> do PagSeguro no HEAD do documento
    */
@@ -47,7 +47,7 @@ export class PagSeguroService {
   }
 
   
-  public startSession() {
+  public startSession(): Observable<any> {
 
     let headers = new Headers({ 'Content-Type': 'application/json' });
     let requestOptions = new RequestOptions({ headers: headers });

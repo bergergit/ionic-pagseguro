@@ -17,12 +17,26 @@ const distFolder = path.join(rootFolder, 'dist');
 /**
  * 1. Delete /dist folder
  */
+/*
 gulp.task('clean:dist', function () {
 
   // Delete contents but not dist folder to avoid broken npm links
   // when dist directory is removed while npm link references it.
   return deleteFolders([distFolder + '/**', '!' + distFolder]);
 });
+*/
+
+// jvandemo fix
+gulp.task('clean:dist', function () {
+  
+    // Delete contents but not dist folder to avoid broken npm links
+    // when dist directory is removed while npm link references it.
+    return deleteFolders([
+      distFolder + '/**',
+      '!' + distFolder,
+      '!' + distFolder + '/*.umd.js'
+    ]);
+  });
 
 /**
  * 2. Clone the /src folder into /.tmp. If an npm link inside /src has been made,

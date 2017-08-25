@@ -1,11 +1,11 @@
-# angular-pagseguro
+# ionic-pagseguro
 
 ## Installation
 
 To install this library, run:
 
 ```bash
-$ npm install angular-pagseguro --save
+$ npm install ionic-pagseguro --save
 ```
 
 ## Consuming your library
@@ -13,7 +13,7 @@ $ npm install angular-pagseguro --save
 Once you have published your library to npm, you can import your library in any Angular application by running:
 
 ```bash
-$ npm install angular-pagseguro
+$ npm install ionic-pagseguro
 ```
 
 and then from your Angular `AppModule`:
@@ -25,7 +25,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 
 // Import your library
-import { SampleModule } from 'angular-pagseguro';
+import { PagSeguroComponent } from 'ionic-pagseguro';
 
 @NgModule({
   declarations: [
