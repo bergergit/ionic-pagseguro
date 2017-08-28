@@ -15,7 +15,7 @@ export class PagSeguroComponent implements OnInit {
   //private options: PagSeguroOptions;
   paymentMethods;
   private sessionId: number;
-  public cardBrand: {};
+  public cardBrand: any;
   public paymentForm: FormGroup;
 
   constructor(private pagSeguroService: PagSeguroService, public formBuilder: FormBuilder) {
@@ -42,49 +42,68 @@ export class PagSeguroComponent implements OnInit {
           }
           // complete: function(response) {
           //     //tratamento comum para todas chamadas
-          // }
+          // } 
         });
       });
     });
-
   }
 
   initForm() {
     this.paymentForm = this.formBuilder.group({
       paymentMethod: ['card'],
       card: this.formBuilder.group({
-        cardNumber: ['', [Validators.required]],
-        brand: ['', [Validators.required]]
+        cardNumber: ['', [Validators.required, Validators.maxLength(16)]],
+        brand: ['', [Validators.required]],
+        validity: ['', [Validators.required]]
       }),
     });
   }
 
   initializeComponent() {
     this.pagSeguroService.loadScript();
-  } 
+  }
 
   /**
    * Recupera a bandeira do cartão, ao se digitar os primeiros 6 numeros
    */
   getBrand() {
-    console.debug('this.cardBrand', this.cardBrand);
-    console.debug('length', this.paymentForm.value.card.cardNumber.length);
-    if (this.paymentForm.value.card.cardNumber.length >= 6 && !this.cardBrand) {
-      PagSeguroDirectPayment.getBrand({
-        cardBin: this.paymentForm.value.card.cardNumber,
-        success: function (result) {
-          console.debug('brand result', result);
-          
-        },
-        error: function (error) {
-          console.debug('getBrand error', error);
+    var that = this;
+    if (this.paymentForm.value.card.cardNumber.length >= 6) {
+      if (!this.cardBrand) {
+        PagSeguroDirectPayment.getBrand({
+          cardBin: this.paymentForm.value.card.cardNumber,
+          success: function (result) {
+            that.cardBrand = result.brand;
+            console.debug('card brand is now', that.cardBrand);
 
-        }
-      });
+          },
+          error: function (error) {
+            if (error) {
+              //console.debug("setting form error", error);
+              that.paymentForm.controls['card'].setErrors({ 'number': true });
+            }
+          }
+        });
+      }
     } else {
-      this.cardBrand = null;
-    }
+      that.cardBrand = null;
+    }  
+  }
 
+  getCardImage() {
+    if (this.paymentMethods && this.cardBrand) {
+      return this.pagSeguroService.getOptions().filesURL + this.paymentMethods.CREDIT_CARD.options[this.cardBrand.name.toUpperCase()].images.SMALL.path;
+    } else {
+      return '';
+    }
+  }
+
+  getCardDisplayName() {
+    if (this.paymentMethods && this.cardBrand) {
+      return this.paymentMethods.CREDIT_CARD.options[this.cardBrand.name.toUpperCase()].displayName;
+    } else {
+      return '';
+    }
   }
 
 }

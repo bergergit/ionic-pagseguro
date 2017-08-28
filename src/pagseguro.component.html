@@ -8,7 +8,7 @@
   </ion-col>
 </ion-row>
 <!-- </ion-card> -->
- 
+
 <!-- <ion-card no-margin margin-top class="pagseguro" *ngIf="paymentMethods" color="dark"> -->
 <form [formGroup]="paymentForm" class="pagseguro" *ngIf="paymentMethods" no-padding no-margin margin-top>
   <p margin-top ion-text color="secondary">Forma de pagamento</p>
@@ -24,15 +24,27 @@
     <!-- <ion-segment-button value="debito">
           <ion-icon ios="ios-at-outline" md="md-at"></ion-icon>
         </ion-segment-button> -->
-  </ion-segment>
-
-  <ion-list no-padding no-margin>
+  </ion-segment>  
+   
+  <ion-list no-padding no-margin> 
     <!-- Formulario de cartao de credito -->
     <!-- <div *ngIf="paymentForm.value.paymentMethod == 'card'"> -->
     <div formGroupName="card" *ngIf="paymentForm.value.paymentMethod == 'card'">
-      <ion-item >
-        <ion-label stacked>Número do cartão</ion-label>
+      <ion-item>
+        <ion-label stacked>Número do cartão
+          <ion-note margin-left ion-text color="danger" *ngIf="(paymentForm.get('card').hasError('number') || paymentForm.get('card').get('cardNumber').hasError('maxlength')) && paymentForm.get('card').get('cardNumber').touched">Número de cartão inválido</ion-note>
+
+          <ion-note *ngIf="cardBrand && !paymentForm.get('card').get('cardNumber').invalid" color="primary"><img [src]="getCardImage()" padding-left></ion-note>
+        </ion-label>
         <ion-input type="number" formControlName="cardNumber" [attr.maxlength]="16" (ionChange)="getBrand()"></ion-input>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-label stacked>Validade (mês/ano)
+          <!-- <ion-note margin-left ion-text color="danger" *ngIf="paymentForm.get('card').hasError('number') && paymentForm.get('card').get('cardNumber').touched">Número de cartão inválido</ion-note> -->
+        </ion-label>
+        <ion-datetime displayFormat="MM/YYYY" max="2050-12-31" min="2016-01-01" doneText="OK" cancelText="Cancelar" formControlName="validity"></ion-datetime>
       </ion-item>
     </div>
 

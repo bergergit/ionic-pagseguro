@@ -1,3 +1,5 @@
+input:focus + .alert { display: none; }
+
 .pagseguro .segment-ios ion-segment-button { 
     height: 56px;
 }

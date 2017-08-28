@@ -21,6 +21,10 @@ export class PagSeguroService {
   public setOptions(options: PagSeguroOptions) {
     this.options = Object.assign(PagSeguroDefaultOptions, options);
   }
+
+  public getOptions(): PagSeguroOptions {
+    return this.options;
+  }
   
   /**
    * Carrega o <script> do PagSeguro no HEAD do documento
