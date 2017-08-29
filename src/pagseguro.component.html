@@ -4,7 +4,7 @@
     <ion-spinner></ion-spinner>
   </ion-col>
   <ion-col>
-    <p>Carregando...</p>
+    <p>Carregando opções de pagamento...</p>
   </ion-col>
 </ion-row>
 <!-- </ion-card> -->
@@ -24,9 +24,9 @@
     <!-- <ion-segment-button value="debito">
           <ion-icon ios="ios-at-outline" md="md-at"></ion-icon>
         </ion-segment-button> -->
-  </ion-segment>  
-   
-  <ion-list no-padding no-margin> 
+  </ion-segment>
+
+  <ion-list no-padding no-margin inset>
     <!-- Formulario de cartao de credito -->
     <!-- <div *ngIf="paymentForm.value.paymentMethod == 'card'"> -->
     <div formGroupName="card" *ngIf="paymentForm.value.paymentMethod == 'card'">
@@ -40,15 +40,28 @@
       </ion-item>
 
 
-      <ion-item>
+      <ion-item no-padding>
         <ion-label stacked>Validade (mês/ano)
           <!-- <ion-note margin-left ion-text color="danger" *ngIf="paymentForm.get('card').hasError('number') && paymentForm.get('card').get('cardNumber').touched">Número de cartão inválido</ion-note> -->
         </ion-label>
-        <ion-datetime displayFormat="MM/YYYY" max="2050-12-31" min="2016-01-01" doneText="OK" cancelText="Cancelar" formControlName="validity"></ion-datetime>
+        <ion-datetime displayFormat="MM/YYYY" max="2050-12-31" min="2016-01-01" doneText="OK" cancelText="Cancelar" formControlName="validity" no-margin></ion-datetime>
+      </ion-item>
+
+      <ion-item>
+        <ion-label stacked>Código de segurança</ion-label>
+        <ion-input type="number" formControlName="cvv" [attr.maxlength]="6"></ion-input>
       </ion-item>
     </div>
 
   </ion-list>
+
+  <ion-row>
+      <ion-col right text-right>
+        <button ion-button color="primary" icon-right (click)="checkout()" [disabled]="!paymentForm.valid || processing">
+        Efetuar pagamento
+      </button>
+      </ion-col> 
+  </ion-row>
 </form>
 
 

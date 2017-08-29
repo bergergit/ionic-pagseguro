@@ -3,10 +3,13 @@ import { CommonModule } from '@angular/common';
 import { PagSeguroComponent } from './pagseguro.component';
 import { PagSeguroService } from './pagseguro.service';
 import { IonicModule } from 'ionic-angular';
+import { Utils } from './utils';
 
 export * from './pagseguro.component'; 
 export * from './pagseguro.service';
 export * from './pagseguro.options'; 
+export * from './pagseguro.data';
+
 //export * from './pagseguro.directive'; 
 
 @NgModule({
@@ -17,6 +20,9 @@ export * from './pagseguro.options';
   ],
   declarations: [
     PagSeguroComponent
+  ],
+  providers: [
+    Utils,
   ],
   exports: [
     PagSeguroComponent
