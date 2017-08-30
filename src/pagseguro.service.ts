@@ -3,20 +3,22 @@ import { PagSeguroDefaultOptions } from './pagseguro.defaults';
 import { RequestOptions, Http, Headers } from '@angular/http';
 import { PagSeguroOptions } from './pagseguro.options';
 //import { Observable } from "rxjs/Observable";
-
+     
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 import { PagSeguroData } from './pagseguro.data';
+import { FormGroup } from '@angular/forms';
 
 declare var PagSeguroDirectPayment: any;
 
-@Injectable()
+@Injectable() 
 export class PagSeguroService {
 
   private scriptLoaded: boolean;
   private options: PagSeguroOptions;
   public creditCardHash;
   private checkoutData: PagSeguroData;
+  private paymentForm: FormGroup;
 
   constructor(private http: Http) {
     this.options = PagSeguroDefaultOptions;
@@ -28,6 +30,10 @@ export class PagSeguroService {
 
   public getOptions(): PagSeguroOptions {
     return this.options;
+  } 
+
+  public setForm(paymentForm: FormGroup) {
+    this.paymentForm = paymentForm;
   }
 
   /**
@@ -101,7 +107,7 @@ export class PagSeguroService {
       });
     });
     return promise;
-  }
+  } 
 
   
   /**
@@ -109,9 +115,21 @@ export class PagSeguroService {
    * O elemento importante aqui é o "items" - que devem ser os itens que sua aplicação está vendendo
    * @param data 
    */
-  public setCheckoutData(data: PagSeguroData) {
-    this.checkoutData = data;
-  }
+  public addCheckoutData(data: PagSeguroData) { 
+    this.checkoutData = Object.assign(this.checkoutData || {}, data);
+
+    console.debug('checkout data added', this.checkoutData);
+
+    // adiciona alguns campos no próprio formulario de checkout
+    if (this.checkoutData.sender) {
+      console.debug('patching value with', this.checkoutData.sender.name);
+      this.paymentForm.patchValue({
+        card: {
+          name: this.checkoutData.sender.name
+        }
+      });
+    }
+  } 
 
   /**
    * Função que realiza o pagamento com o PagSeguro.

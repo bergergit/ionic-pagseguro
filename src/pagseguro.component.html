@@ -39,6 +39,12 @@
         <ion-input type="number" formControlName="cardNumber" [attr.maxlength]="16" (ionChange)="getBrand()"></ion-input>
       </ion-item>
 
+      <ion-item>
+        <ion-label stacked>Nome impresso no cartão
+          <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('card').get('name').valid && paymentForm.get('card').get('name').touched">Campo obrigatório</ion-note>
+        </ion-label>
+        <ion-input type="text" formControlName="name"></ion-input>
+      </ion-item>
 
       <ion-item no-padding>
         <ion-label stacked>Validade (mês/ano)
@@ -51,7 +57,19 @@
         <ion-label stacked>Código de segurança</ion-label>
         <ion-input type="number" formControlName="cvv" [attr.maxlength]="6"></ion-input>
       </ion-item>
+
+      <p no-margin no-margin margin-top ion-text color="secondary">Endereço do titular do cartão</p>
+
+      <ion-item>
+        <ion-label stacked>CEP</ion-label>
+        <ion-input type="number" formControlName="zip" [attr.maxlength]="8"></ion-input>
+      </ion-item>
+
+
+
     </div>
+
+
 
   </ion-list>
 

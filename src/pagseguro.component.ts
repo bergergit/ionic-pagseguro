@@ -4,7 +4,7 @@ import { FormGroup, FormBuilder, Validators } from "@angular/forms";
 import { PagSeguroData } from './pagseguro.data';
 //import { PagSeguroOptions } from "./pagseguro.options";
 import { Utils } from './utils';
-
+     
 declare var PagSeguroDirectPayment: any;
 
 @Component({
@@ -22,11 +22,12 @@ export class PagSeguroComponent implements OnInit {
   public processing = false;
 
   constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder, private utils: Utils) {
-  }
+    
+  }   
 
   async ngOnInit() {  
-    this.initForm();
-    //var that = this;
+    this.initForm(); 
+    this.pagSeguroService.setForm(this.paymentForm);
     // carrega o .js do PagSeguro
     await this.pagSeguroService.loadScript().then(_ => {
       //this.pagSeguroService.startSession().subscribe(result => {
@@ -52,15 +53,18 @@ export class PagSeguroComponent implements OnInit {
    * Inicializar o FormGroup usado para recuperar as informações do usuário
    */
   initForm() {
+    // this.pagSeguroService.checkoutData.sender.name
     this.paymentForm = this.formBuilder.group({
       paymentMethod: ['card'],
       card: this.formBuilder.group({
         cardNumber: ['', [Validators.required, Validators.maxLength(16)]],
+        name: ['', [Validators.required]],
         validity: ['', [Validators.required]],
-        cvv: ['', [Validators.required, Validators.minLength(3)]]
+        cvv: ['', [Validators.required, Validators.minLength(3)]],
+        zip: ['', [Validators.required]],
       }),
     });
-  }
+  } 
 
   initializeComponent() {
     this.pagSeguroService.loadScript();
@@ -70,7 +74,6 @@ export class PagSeguroComponent implements OnInit {
    * Recupera a bandeira do cartão, ao se digitar os primeiros 6 numeros
    */
   getBrand() {
-    //var that = this;
     if (this.paymentForm.value.card.cardNumber.length >= 6) {
       if (!this.cardBrand) {
         this.pagSeguroService.getCardBrand(this.paymentForm.value.card.cardNumber).then(result => {
@@ -79,21 +82,6 @@ export class PagSeguroComponent implements OnInit {
         }).catch(error => {
           this.paymentForm.controls['card'].setErrors({ 'number': true });
         });
-
-        // PagSeguroDirectPayment.getBrand({
-        //   cardBin: this.paymentForm.value.card.cardNumber,
-        //   success: function (result) {
-        //     that.cardBrand = result.brand;
-        //     console.debug('card brand is now', that.cardBrand);
-
-        //   },
-        //   error: function (error) {
-        //     if (error) {
-        //       //console.debug("setting form error", error);
-        //       that.paymentForm.controls['card'].setErrors({ 'number': true });
-        //     }
-        //   }
-        // });
       }
     } else {
       this.cardBrand = null;
@@ -136,12 +124,11 @@ export class PagSeguroComponent implements OnInit {
       if (error.status == 401) {
         this.utils.showErrorAlert("Erro ao processar o pagamento", "Pagamento não autorizado");
       } else {
-        this.utils.showErrorAlert("Erro ao processar o pagamento", JSON.stringify(error.errors));
+        this.utils.showErrorAlert("Erro ao processar o pagamento", JSON.stringify(error.errors || error.statusText));
       }
       
     });
   }
-
 
   /**
    * Monta o objeto necessário para a API do PagSeguro

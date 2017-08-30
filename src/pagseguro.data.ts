@@ -4,7 +4,7 @@
 export interface PagSeguroData {
     method?: "creditCard" | "boleto" | "eft";
     sender?: {
-        hash: string;
+        hash?: string;
         ip?: string;
         email?: string;
         name?: string; 
@@ -13,7 +13,6 @@ export interface PagSeguroData {
                 type: string;
                 value: string;
             }
-
         }
     }
     creditCard?: {
