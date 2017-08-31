@@ -1,18 +1,23 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { PagSeguroDefaultOptions } from './pagseguro.defaults';
 import { RequestOptions, Http, Headers } from '@angular/http';
 import { PagSeguroOptions } from './pagseguro.options';
-//import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs/Observable";
      
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/toPromise';
 import { PagSeguroData } from './pagseguro.data';
 import { FormGroup } from '@angular/forms';
+
+import 'rxjs/add/operator/retry';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/toPromise';
 
 declare var PagSeguroDirectPayment: any;
 
 @Injectable() 
 export class PagSeguroService {
+
+  private ZIP_URL = 'https://viacep.com.br/ws';
 
   private scriptLoaded: boolean;
   private options: PagSeguroOptions;
@@ -20,7 +25,7 @@ export class PagSeguroService {
   private checkoutData: PagSeguroData;
   private paymentForm: FormGroup;
 
-  constructor(private http: Http) {
+  constructor(private http: Http, public httpClient: HttpClient) {
     this.options = PagSeguroDefaultOptions;
   }
 
@@ -112,24 +117,41 @@ export class PagSeguroService {
   
   /**
    * Use esta função para definir os itens e valores que devem entrar no checkout do PagSeguro
-   * O elemento importante aqui é o "items" - que devem ser os itens que sua aplicação está vendendo
    * @param data 
    */
   public addCheckoutData(data: PagSeguroData) { 
     this.checkoutData = Object.assign(this.checkoutData || {}, data);
+    //this.checkoutData = Object.assign(data, this.checkoutData || {});
 
     console.debug('checkout data added', this.checkoutData);
 
     // adiciona alguns campos no próprio formulario de checkout
-    if (this.checkoutData.sender) {
-      console.debug('patching value with', this.checkoutData.sender.name);
+    if (this.checkoutData.sender && this.checkoutData.sender.name) {
       this.paymentForm.patchValue({
         card: {
           name: this.checkoutData.sender.name
         }
       });
+
+      if (this.checkoutData.sender.documents && this.checkoutData.sender.documents.document.type === 'CPF') {
+        this.paymentForm.patchValue({
+          card: {
+            cpf: this.checkoutData.sender.documents.document.value
+          }
+        });
+      }
+    }
+
+    if (this.checkoutData.creditCard && this.checkoutData.creditCard.billingAddress) {
+      this.patchAddress(this.checkoutData.creditCard.billingAddress);
     }
   } 
+
+  public patchAddress(address) {
+    this.paymentForm.patchValue({
+      address: address
+    });
+  }
 
   /**
    * Função que realiza o pagamento com o PagSeguro.
@@ -139,7 +161,10 @@ export class PagSeguroService {
    */
   public checkout(data: PagSeguroData): Promise<any> {
     console.debug('Tentando checkout com os dados', data);
-    data = Object.assign(data, this.checkoutData);
+    data = Object.assign(this.checkoutData, data);
+    //data = Object.assign(data, this.checkoutData);
+    data.sender.hash = PagSeguroDirectPayment.getSenderHash();
+
     console.debug('merge do checkoutData', data)
     // recupera o token do cartao de crédito
     //var promise = new Promise((resolve, reject) => {
@@ -205,6 +230,35 @@ export class PagSeguroService {
       });
     });
     return promise;
+  } 
+
+  /**
+   * Fetches zip code information. (works for Brazil)
+   * @param zip 
+   */
+  public fetchZip(zip: string): Observable<any> {
+    return this.httpClient.get<any>(`${this.ZIP_URL}/${zip}/json`).retry(2);
+  }
+
+  /**
+   * Faz um match dos dados retornados pelo Viacep, com o formato necessário para o PagSeguro
+   * @param address 
+   */
+  public matchAddress(address: any): PagSeguroData {
+    let addressData: PagSeguroData = {
+      creditCard: {
+        billingAddress: {
+          state: address.uf,
+          country: 'BRA',
+          postalCode: address.cep.replace('-', ''),
+          number: '',
+          city: address.localidade,
+          street: address.logradouro,
+          district: address.bairro
+        }
+      }
+    }
+    return addressData;
   }
 
   /*

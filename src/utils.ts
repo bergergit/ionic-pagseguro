@@ -6,7 +6,7 @@ export class Utils {
 
   private TIMEOUT = 20000;
   private loader: Loading;
-
+  
   constructor(public toastCtrl: ToastController, public alertCtrl: AlertController, public loadingCtrl: LoadingController) {
   }
 
@@ -59,5 +59,7 @@ export class Utils {
       throw error;
     });
   }
+
+
 
 }

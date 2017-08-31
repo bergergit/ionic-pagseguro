@@ -21,7 +21,7 @@ export class PagSeguroComponent implements OnInit {
   public paymentForm: FormGroup;
   public processing = false;
 
-  constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder, private utils: Utils) {
+  constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder, public utils: Utils) {
     
   }   
 
@@ -61,8 +61,17 @@ export class PagSeguroComponent implements OnInit {
         name: ['', [Validators.required]],
         validity: ['', [Validators.required]],
         cvv: ['', [Validators.required, Validators.minLength(3)]],
-        zip: ['', [Validators.required]],
+        cpf: ['', [Validators.required]]
       }),
+      address: this.formBuilder.group({
+        state: [''],
+        country: [''],
+        postalCode: ['', [Validators.required]],
+        number: ['', [Validators.required]],
+        city: [''],
+        street: ['', [Validators.required]],
+        district: ['']
+      })
     });
   } 
 
@@ -130,15 +139,22 @@ export class PagSeguroComponent implements OnInit {
     });
   }
 
+  fetchZip(zip) {
+    console.debug('fetching zip for', zip);
+    this.pagSeguroService.fetchZip(zip).subscribe(address => {
+      if (address) {
+        console.debug('got address', address);
+        this.pagSeguroService.patchAddress(this.pagSeguroService.matchAddress(address).creditCard.billingAddress);
+      }
+    });
+  }
+
   /**
    * Monta o objeto necessário para a API do PagSeguro
    */
   buildPagSeguroData(): PagSeguroData {
     let data: PagSeguroData = {
       method: 'creditCard',
-      sender: {
-        hash: PagSeguroDirectPayment.getSenderHash()
-      },
       shipping: {
         addressRequired: false
       },
@@ -146,7 +162,17 @@ export class PagSeguroComponent implements OnInit {
         cardNumber: this.paymentForm.value.card.cardNumber,
         cvv: this.paymentForm.value.card.cvv,
         expirationMonth: this.paymentForm.value.card.validity.substring(5),
-        expirationYear: this.paymentForm.value.card.validity.substring(0, 4)
+        expirationYear: this.paymentForm.value.card.validity.substring(0, 4),
+        billingAddress: this.paymentForm.value.address,
+        holder: {
+          name: this.paymentForm.value.card.name,
+          documents: {
+            document: {
+              type: 'CPF',
+              value: this.paymentForm.value.card.cpf
+            }
+          }
+        }
       }
     }
     return data;

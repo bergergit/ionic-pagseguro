@@ -4,6 +4,7 @@ import { PagSeguroComponent } from './pagseguro.component';
 import { PagSeguroService } from './pagseguro.service';
 import { IonicModule } from 'ionic-angular';
 import { Utils } from './utils';
+import { HttpClientModule } from '@angular/common/http';
 
 export * from './pagseguro.component'; 
 export * from './pagseguro.service';
@@ -23,6 +24,7 @@ export * from './pagseguro.data';
   ],
   providers: [
     Utils,
+    HttpClientModule
   ],
   exports: [
     PagSeguroComponent
