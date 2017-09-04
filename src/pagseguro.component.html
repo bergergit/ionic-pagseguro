@@ -68,9 +68,16 @@
           </ion-label>
           <ion-input type="text" formControlName="cpf"></ion-input>
         </ion-item>
-
-        <p no-margin no-margin margin-top ion-text color="secondary">Endereço do titular do cartão</p>
       </div>
+      
+      <ion-item>
+        <ion-label stacked>Telefone do titular
+          <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('phone').valid && paymentForm.get('phone').touched">Número inválido</ion-note>
+        </ion-label>
+        <ion-input type="text" formControlName="phone"></ion-input>
+      </ion-item>
+
+      <p no-margin no-margin margin-top ion-text color="secondary">Endereço do titular do cartão</p>
 
       <div formGroupName="address">
         <ion-item>

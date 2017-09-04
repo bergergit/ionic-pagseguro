@@ -2,7 +2,7 @@
 
 ## Installation
 
-To install this library, run:
+Instalação:
 
 ```bash
 $ npm install ionic-pagseguro --save

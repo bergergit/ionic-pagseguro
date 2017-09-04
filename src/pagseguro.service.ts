@@ -140,6 +140,12 @@ export class PagSeguroService {
           }
         });
       }
+
+      if (this.checkoutData.sender.phone) {
+        this.paymentForm.patchValue({
+          phone: this.checkoutData.sender.phone.areaCode + this.checkoutData.sender.phone.number
+        })
+      }
     }
 
     if (this.checkoutData.creditCard && this.checkoutData.creditCard.billingAddress) {
@@ -161,6 +167,10 @@ export class PagSeguroService {
    */
   public checkout(data: PagSeguroData): Promise<any> {
     console.debug('Tentando checkout com os dados', data);
+    data.sender.name = this.checkoutData.sender.name;
+    data.sender.email = this.checkoutData.sender.email;
+    data.sender.documents = this.checkoutData.sender.documents;
+    
     data = Object.assign(this.checkoutData, data);
     //data = Object.assign(data, this.checkoutData);
     data.sender.hash = PagSeguroDirectPayment.getSenderHash();
@@ -171,6 +181,13 @@ export class PagSeguroService {
       if (data.method == 'creditCard') {
         return this.createCardToken(data).then(result => {
           data.creditCard.token = result.card.token;
+
+          // removendo dados nao necessarios do cartao
+          delete (data.creditCard.cardNumber);
+          delete (data.creditCard.cvv);
+          delete (data.creditCard.expirationMonth);
+          delete (data.creditCard.expirationYear);
+
           return this._checkout(data);
         });
         /*
@@ -201,6 +218,8 @@ export class PagSeguroService {
     */
 
     console.debug('invocando a API com os dados.', data);
+
+
 
     let headers = new Headers({ 'Content-Type': 'application/json' });
     let requestOptions = new RequestOptions({ headers: headers });

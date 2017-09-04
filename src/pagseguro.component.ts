@@ -71,7 +71,9 @@ export class PagSeguroComponent implements OnInit {
         city: [''],
         street: ['', [Validators.required]],
         district: ['']
-      })
+      }),
+      phone: ['', [Validators.required, Validators.minLength(10)]]
+
     });
   } 
 
@@ -149,7 +151,7 @@ export class PagSeguroComponent implements OnInit {
     });
   }
 
-  /**
+  /**  
    * Monta o objeto necessário para a API do PagSeguro
    */
   buildPagSeguroData(): PagSeguroData {
@@ -172,6 +174,12 @@ export class PagSeguroComponent implements OnInit {
               value: this.paymentForm.value.card.cpf
             }
           }
+        }
+      },
+      sender: {
+        phone: {
+          areaCode: this.paymentForm.value.phone.substring(0, 2),
+          number: this.paymentForm.value.phone.substring(2)
         }
       }
     }
