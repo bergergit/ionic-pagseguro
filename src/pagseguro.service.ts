@@ -170,7 +170,7 @@ export class PagSeguroService {
     data.sender.name = this.checkoutData.sender.name;
     data.sender.email = this.checkoutData.sender.email;
     data.sender.documents = this.checkoutData.sender.documents;
-    
+
     data = Object.assign(this.checkoutData, data);
     //data = Object.assign(data, this.checkoutData);
     data.sender.hash = PagSeguroDirectPayment.getSenderHash();
@@ -219,9 +219,10 @@ export class PagSeguroService {
 
     console.debug('invocando a API com os dados.', data);
 
+    var headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    if (data.token) headers.append('Authorization', 'Bearer ' + data.token);
 
-
-    let headers = new Headers({ 'Content-Type': 'application/json' });
     let requestOptions = new RequestOptions({ headers: headers });
 
     //return this.http.get(this.options.remoteApi.checkoutURL, requestOptions).map((res: Response) => res.json());

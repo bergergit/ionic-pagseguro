@@ -2,6 +2,7 @@
  * Interface com todos os dados usados a serem enviados para o sistema de Pagamento
  */
 export interface PagSeguroData {
+    token?: string;
     method?: "creditCard" | "boleto" | "eft";
     sender?: {
         hash?: string;
@@ -54,8 +55,8 @@ export interface PagSeguroData {
         item: {
             id: string;
             description: string;
-            amount: number;
-            quantity: number;
+            amount?: number;
+            quantity?: number;
         }
     }]
 
