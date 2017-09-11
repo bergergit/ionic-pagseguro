@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { PagSeguroService } from './pagseguro.service';
 import { FormGroup, FormBuilder, Validators } from "@angular/forms";
-import { PagSeguroData } from './pagseguro.data';
+//import { PagSeguroData } from './pagseguro.data';
 //import { PagSeguroOptions } from "./pagseguro.options";
 import { Utils } from './utils';
      
@@ -13,6 +13,8 @@ declare var PagSeguroDirectPayment: any;
   styleUrls: ['pagseguro.style.css']
 })
 export class PagSeguroComponent implements OnInit {
+
+  @Output() checkout:EventEmitter<string> = new EventEmitter();
 
   //private options: PagSeguroOptions;
   paymentMethods;
@@ -122,15 +124,31 @@ export class PagSeguroComponent implements OnInit {
   }
 
   /**
+   * Se tivermos um evento de (checkout) definido pelo Component pai, apenas invocamos esse evento
+   * Senao, invocamos a funçao interna de checkout do component
+   */
+  public doCheckout() {
+    this.processing = true;
+    if (this.checkout) {
+      //this.checkout().then(_ => this.processing = false).catch(_ => this.processing = false);
+      this.checkout.emit('checkout');
+      this.processing = false;
+    } else {
+      this.internalCheckout().then(_ => this.processing = false).catch(_ => this.processing = false);
+    }
+
+  }
+
+  /**
    * Invoca o checkout do PagSeguro
    */
-  public checkout() {
-    this.processing = true;
-    this.utils.executePromiseWithMessage(this.pagSeguroService.checkout(this.buildPagSeguroData()), true, "Processando pagamento...").then(result => {
-      this.processing = false;
+  private internalCheckout(): Promise<any> {
+    //this.processing = true;
+    return this.utils.executePromiseWithMessage(this.pagSeguroService.checkout(), true, "Processando pagamento...").then(result => {
+      //this.processing = false;
       console.debug('checkout result', result);
     }).catch(error => {
-      this.processing = false;
+      //this.processing = false;
       console.error('Erro no checkout', error);
       if (error.status == 401) {
         this.utils.showErrorAlert("Erro ao processar o pagamento", "Pagamento não autorizado");
@@ -151,40 +169,7 @@ export class PagSeguroComponent implements OnInit {
     });
   }
 
-  /**  
-   * Monta o objeto necessário para a API do PagSeguro
-   */
-  buildPagSeguroData(): PagSeguroData {
-    let data: PagSeguroData = {
-      method: 'creditCard',
-      shipping: {
-        addressRequired: false
-      },
-      creditCard: {
-        cardNumber: this.paymentForm.value.card.cardNumber,
-        cvv: this.paymentForm.value.card.cvv,
-        expirationMonth: this.paymentForm.value.card.validity.substring(5),
-        expirationYear: this.paymentForm.value.card.validity.substring(0, 4),
-        billingAddress: this.paymentForm.value.address,
-        holder: {
-          name: this.paymentForm.value.card.name,
-          documents: {
-            document: {
-              type: 'CPF',
-              value: this.paymentForm.value.card.cpf
-            }
-          }
-        }
-      },
-      sender: {
-        phone: {
-          areaCode: this.paymentForm.value.phone.substring(0, 2),
-          number: this.paymentForm.value.phone.substring(2)
-        }
-      }
-    }
-    return data;
-  }
+  
 
 
 }

@@ -108,7 +108,7 @@
 
   <ion-row>
     <ion-col right text-right>
-      <button ion-button color="primary" icon-right (click)="checkout()" [disabled]="!paymentForm.valid || processing">
+      <button ion-button color="primary" icon-right (click)="doCheckout()" [disabled]="!paymentForm.valid || processing">
         Efetuar pagamento
       </button>
     </ion-col>

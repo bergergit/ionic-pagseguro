@@ -3,6 +3,7 @@
  */
 export interface PagSeguroData {
     token?: string;
+    reference?: string;
     method?: "creditCard" | "boleto" | "eft";
     sender?: {
         hash?: string;

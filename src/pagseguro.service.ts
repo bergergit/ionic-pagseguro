@@ -119,37 +119,40 @@ export class PagSeguroService {
    * Use esta função para definir os itens e valores que devem entrar no checkout do PagSeguro
    * @param data 
    */
-  public addCheckoutData(data: PagSeguroData) { 
+  public addCheckoutData(data: PagSeguroData, skipPatchForm?: boolean) { 
     this.checkoutData = Object.assign(this.checkoutData || {}, data);
     //this.checkoutData = Object.assign(data, this.checkoutData || {});
 
     console.debug('checkout data added', this.checkoutData);
 
-    // adiciona alguns campos no próprio formulario de checkout
-    if (this.checkoutData.sender && this.checkoutData.sender.name) {
-      this.paymentForm.patchValue({
-        card: {
-          name: this.checkoutData.sender.name
-        }
-      });
+    if (!skipPatchForm) {
 
-      if (this.checkoutData.sender.documents && this.checkoutData.sender.documents.document.type === 'CPF') {
+      // adiciona alguns campos no próprio formulario de checkout
+      if (this.checkoutData.sender && this.checkoutData.sender.name) {
         this.paymentForm.patchValue({
           card: {
-            cpf: this.checkoutData.sender.documents.document.value
+            name: this.checkoutData.sender.name
           }
         });
+
+        if (this.checkoutData.sender.documents && this.checkoutData.sender.documents.document.type === 'CPF') {
+          this.paymentForm.patchValue({
+            card: {
+              cpf: this.checkoutData.sender.documents.document.value
+            }
+          });
+        }
+
+        if (this.checkoutData.sender.phone) {
+          this.paymentForm.patchValue({
+            phone: this.checkoutData.sender.phone.areaCode + this.checkoutData.sender.phone.number
+          })
+        }
       }
 
-      if (this.checkoutData.sender.phone) {
-        this.paymentForm.patchValue({
-          phone: this.checkoutData.sender.phone.areaCode + this.checkoutData.sender.phone.number
-        })
+      if (this.checkoutData.creditCard && this.checkoutData.creditCard.billingAddress) {
+        this.patchAddress(this.checkoutData.creditCard.billingAddress);
       }
-    }
-
-    if (this.checkoutData.creditCard && this.checkoutData.creditCard.billingAddress) {
-      this.patchAddress(this.checkoutData.creditCard.billingAddress);
     }
   } 
 
@@ -159,13 +162,51 @@ export class PagSeguroService {
     });
   }
 
+  /**  
+   * Monta o objeto necessário para a API do PagSeguro
+   */
+  buildPagSeguroData(): PagSeguroData {
+    let data: PagSeguroData = {
+      method: 'creditCard',
+      shipping: {
+        addressRequired: false
+      },
+      creditCard: {
+        cardNumber: this.paymentForm.value.card.cardNumber,
+        cvv: this.paymentForm.value.card.cvv,
+        expirationMonth: this.paymentForm.value.card.validity.substring(5),
+        expirationYear: this.paymentForm.value.card.validity.substring(0, 4),
+        billingAddress: this.paymentForm.value.address,
+        holder: {
+          name: this.paymentForm.value.card.name,
+          documents: {
+            document: {
+              type: 'CPF',
+              value: this.paymentForm.value.card.cpf
+            }
+          }
+        }
+      },
+      sender: {
+        phone: {
+          areaCode: this.paymentForm.value.phone.substring(0, 2),
+          number: this.paymentForm.value.phone.substring(2)
+        }
+      }
+    }
+    return data;
+  }
+
+  
+
   /**
    * Função que realiza o pagamento com o PagSeguro.
    * Ela irá passar os dados resgatados, para uma Firebase Functio, que irá concluir o processo
    * 
    * @param data 
    */
-  public checkout(data: PagSeguroData): Promise<any> {
+  public checkout(): Promise<any> {
+    let data:PagSeguroData = this.buildPagSeguroData();
     console.debug('Tentando checkout com os dados', data);
     data.sender.name = this.checkoutData.sender.name;
     data.sender.email = this.checkoutData.sender.email;
