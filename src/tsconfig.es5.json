@@ -21,8 +21,8 @@
     "annotateForClosureCompiler": true,
     "strictMetadataEmit": true,
     "skipTemplateCodegen": true,
-    "flatModuleOutFile": "angular-pagseguro.js",
-    "flatModuleId": "angular-pagseguro"
+    "flatModuleOutFile": "ionic-pagseguro.js",
+    "flatModuleId": "ionic-pagseguro"
   },
   "files": [
     "./index.ts"
