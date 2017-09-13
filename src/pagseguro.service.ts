@@ -1,22 +1,20 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { PagSeguroDefaultOptions } from './pagseguro.defaults';
 import { RequestOptions, Http, Headers } from '@angular/http';
 import { PagSeguroOptions } from './pagseguro.options';
-import { Observable } from "rxjs/Observable";
+//import { Observable } from "rxjs/Observable";
      
 import { PagSeguroData } from './pagseguro.data';
 import { FormGroup } from '@angular/forms';
 
-import 'rxjs/add/operator/retry';
-import 'rxjs/add/operator/map';
+//import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 declare var PagSeguroDirectPayment: any;
 
 @Injectable() 
 export class PagSeguroService {
-
+ 
   private ZIP_URL = 'https://viacep.com.br/ws';
 
   private scriptLoaded: boolean;
@@ -25,7 +23,7 @@ export class PagSeguroService {
   private checkoutData: PagSeguroData;
   private paymentForm: FormGroup;
 
-  constructor(private http: Http, public httpClient: HttpClient) {
+  constructor(private http: Http) {
     this.options = PagSeguroDefaultOptions;
   }
 
@@ -297,8 +295,9 @@ export class PagSeguroService {
    * Fetches zip code information. (works for Brazil)
    * @param zip 
    */
-  public fetchZip(zip: string): Observable<any> {
-    return this.httpClient.get<any>(`${this.ZIP_URL}/${zip}/json`).retry(2);
+  public fetchZip(zip: string): Promise<any> {
+    //return this.httpClient.get<any>(`${this.ZIP_URL}/${zip}/json`).retry(2);
+    return this.http.get(`${this.ZIP_URL}/${zip}/json`).toPromise();
   }
 
   /**
@@ -306,20 +305,24 @@ export class PagSeguroService {
    * @param address 
    */
   public matchAddress(address: any): PagSeguroData {
-    let addressData: PagSeguroData = {
-      creditCard: {
-        billingAddress: {
-          state: address.uf,
-          country: 'BRA',
-          postalCode: address.cep.replace('-', ''),
-          number: '',
-          city: address.localidade,
-          street: address.logradouro,
-          district: address.bairro
+    if (address) {
+      let addressData: PagSeguroData = {
+        creditCard: {
+          billingAddress: {
+            state: address.uf,
+            country: 'BRA',
+            postalCode: address.cep.replace('-', ''),
+            number: '',
+            city: address.localidade,
+            street: address.logradouro,
+            district: address.bairro
+          }
         }
       }
+      return addressData;
     }
-    return addressData;
+    return null;
+    
   }
 
   /*

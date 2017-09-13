@@ -4,15 +4,12 @@ import { PagSeguroComponent } from './pagseguro.component';
 import { PagSeguroService } from './pagseguro.service';
 import { IonicModule } from 'ionic-angular';
 import { Utils } from './utils';
-import { HttpClientModule } from '@angular/common/http';
 
 export * from './pagseguro.component'; 
 export * from './pagseguro.service';
 export * from './pagseguro.options'; 
 export * from './pagseguro.data';
-
-//export * from './pagseguro.directive'; 
-
+ 
 @NgModule({
   imports: [
     CommonModule,
@@ -23,8 +20,7 @@ export * from './pagseguro.data';
     PagSeguroComponent
   ],
   providers: [
-    Utils,
-    HttpClientModule
+    Utils
   ],
   exports: [
     PagSeguroComponent
@@ -32,9 +28,15 @@ export * from './pagseguro.data';
 })
 export class PagSeguroModule {
   static forRoot(): ModuleWithProviders {
-    return {
+    return { 
       ngModule: PagSeguroModule,
       providers: [PagSeguroService]
+    };
+  }
+
+  static forChild(): ModuleWithProviders {
+    return { 
+      ngModule: PagSeguroModule
     };
   }
 }

@@ -1,9 +1,9 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { PagSeguroService } from './pagseguro.service';
-import { FormGroup, FormBuilder, Validators } from "@angular/forms";
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 //import { PagSeguroData } from './pagseguro.data';
 //import { PagSeguroOptions } from "./pagseguro.options";
-import { Utils } from './utils';
+//import { Utils } from './utils';
      
 declare var PagSeguroDirectPayment: any;
 
@@ -13,7 +13,7 @@ declare var PagSeguroDirectPayment: any;
   styleUrls: ['pagseguro.style.css']
 })
 export class PagSeguroComponent implements OnInit {
-
+ 
   @Output() checkout:EventEmitter<string> = new EventEmitter();
 
   //private options: PagSeguroOptions;
@@ -23,15 +23,15 @@ export class PagSeguroComponent implements OnInit {
   public paymentForm: FormGroup;
   public processing = false;
 
-  constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder, public utils: Utils) {
+  constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder) {
     
   }   
 
-  async ngOnInit() {  
+  ngOnInit() {  
     this.initForm(); 
     this.pagSeguroService.setForm(this.paymentForm);
     // carrega o .js do PagSeguro
-    await this.pagSeguroService.loadScript().then(_ => {
+    this.pagSeguroService.loadScript().then(_ => {
       //this.pagSeguroService.startSession().subscribe(result => {
       this.pagSeguroService.startSession().then(response => {
         let result = response.json();
@@ -134,14 +134,15 @@ export class PagSeguroComponent implements OnInit {
       this.checkout.emit('checkout');
       this.processing = false;
     } else {
-      this.internalCheckout().then(_ => this.processing = false).catch(_ => this.processing = false);
-    }
+      //this.internalCheckout().then(_ => this.processing = false).catch(_ => this.processing = false);
+    } 
 
   }
 
   /**
    * Invoca o checkout do PagSeguro
    */
+  /*
   private internalCheckout(): Promise<any> {
     //this.processing = true;
     return this.utils.executePromiseWithMessage(this.pagSeguroService.checkout(), true, "Processando pagamento...").then(result => {
@@ -158,13 +159,14 @@ export class PagSeguroComponent implements OnInit {
       
     });
   }
+  */
 
   fetchZip(zip) {
     console.debug('fetching zip for', zip);
-    this.pagSeguroService.fetchZip(zip).subscribe(address => {
+    this.pagSeguroService.fetchZip(zip).then(address => {
       if (address) {
         console.debug('got address', address);
-        this.pagSeguroService.patchAddress(this.pagSeguroService.matchAddress(address).creditCard.billingAddress);
+        this.pagSeguroService.patchAddress(this.pagSeguroService.matchAddress(address.json()).creditCard.billingAddress);
       }
     });
   }
