@@ -43,7 +43,6 @@ export class PagSeguroService {
    * Carrega o <script> do PagSeguro no HEAD do documento
    */
   public loadScript(): Promise<any> {
-    //console.debug('Will load options with URL', this.options.scriptURL);
     var promise = new Promise((resolve) => {
       if (this.options.loadScript && !this.scriptLoaded) {
         let script: HTMLScriptElement = document.createElement('script');
@@ -121,8 +120,6 @@ export class PagSeguroService {
     this.checkoutData = Object.assign(this.checkoutData || {}, data);
     //this.checkoutData = Object.assign(data, this.checkoutData || {});
 
-    console.debug('checkout data added', this.checkoutData);
-
     if (!skipPatchForm) {
 
       // adiciona alguns campos no próprio formulario de checkout
@@ -160,6 +157,19 @@ export class PagSeguroService {
     });
   }
 
+  
+  /**
+   * Converte do formato ISO (yyyy-MM-dd) para o formato do PagSeguro que é: dd/MM/yyyy
+   * @param isoDate 
+   */
+  private convertIsoDate(isoDate): string {
+    var ptrn = /(\d{4})\-(\d{2})\-(\d{2})/;
+    if(!isoDate || !isoDate.match(ptrn)) {
+        return null;
+    }
+    return isoDate.replace(ptrn, '$3/$2/$1');
+  }
+
   /**  
    * Monta o objeto necessário para a API do PagSeguro
    */
@@ -182,7 +192,12 @@ export class PagSeguroService {
               type: 'CPF',
               value: this.paymentForm.value.card.cpf
             }
-          }
+          },
+          phone: {
+            areaCode: this.paymentForm.value.phone.substring(0, 2),
+            number: this.paymentForm.value.phone.substring(2)
+          },
+          birthDate: this.convertIsoDate(this.paymentForm.value.birthDate)
         }
       },
       sender: {
@@ -205,7 +220,6 @@ export class PagSeguroService {
    */
   public checkout(): Promise<any> {
     let data:PagSeguroData = this.buildPagSeguroData();
-    console.debug('Tentando checkout com os dados', data);
     data.sender.name = this.checkoutData.sender.name;
     data.sender.email = this.checkoutData.sender.email;
     data.sender.documents = this.checkoutData.sender.documents;
@@ -214,7 +228,6 @@ export class PagSeguroService {
     //data = Object.assign(data, this.checkoutData);
     data.sender.hash = PagSeguroDirectPayment.getSenderHash();
 
-    console.debug('merge do checkoutData', data)
     // recupera o token do cartao de crédito
     //var promise = new Promise((resolve, reject) => {
       if (data.method == 'creditCard') {
@@ -231,7 +244,7 @@ export class PagSeguroService {
         });
         /*
         .catch(error => {
-          console.debug('error ao criar token do cartao', error);
+          console.error('error ao criar token do cartao', error);
           reject(error);
         });
         */
@@ -248,14 +261,6 @@ export class PagSeguroService {
    * @param data
    */
   private _checkout(data: PagSeguroData): Promise<any> {
-   /*
-    var promise = new Promise((resolve, reject) => {
-      console.debug('invocando a API com os dados', data);
-      resolve('ok');
-    });
-    return promise;
-    */
-
     console.debug('invocando a API com os dados.', data);
 
     var headers = new Headers();
@@ -324,28 +329,5 @@ export class PagSeguroService {
     return null;
     
   }
-
-  /*
-
-  public store(dados: Dados) {
-
-    let headers = new Headers({ 'Content-Type': 'application/json' });
-    let options = new RequestOptions({ headers: headers });
-
-    let body = JSON.stringify({ dados });
-    return this.http.post('http://www.suaApi.com.br/store', body, options)
-      .map(res => res.json());
-  }
-
-  public cancel() {
-
-    let headers = new Headers({ 'Content-Type': 'application/json' });
-    let options = new RequestOptions({ headers: headers });
-
-    return this.http.get('http://www.suaApi.com.br/cancel', options)
-      .map(res => res.json());
-  }
-  */
-
 
 }

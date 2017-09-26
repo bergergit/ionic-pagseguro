@@ -40,10 +40,10 @@ export class PagSeguroComponent implements OnInit {
 
         // recupera as opçoes de pagamento
         this.pagSeguroService.getPaymentMethods(100).then(response => {
-          console.debug('paymentMethods', response);
+          //console.debug('paymentMethods', response);
           this.paymentMethods = response.paymentMethods;
         }).catch(error => {
-          console.debug('error', error);
+          console.error('error', error);
         });
       }).catch(error => {
         console.error('Erro ao iniciar sessao', error);
@@ -74,7 +74,8 @@ export class PagSeguroComponent implements OnInit {
         street: ['', [Validators.required]],
         district: ['']
       }),
-      phone: ['', [Validators.required, Validators.minLength(10)]]
+      phone: ['', [Validators.required, Validators.minLength(10)]],
+      birthDate: ['', [Validators.required]]
 
     });
   } 
@@ -91,7 +92,6 @@ export class PagSeguroComponent implements OnInit {
       if (!this.cardBrand) {
         this.pagSeguroService.getCardBrand(this.paymentForm.value.card.cardNumber).then(result => {
           this.cardBrand = result.brand;
-          console.debug('card brand is now', this.cardBrand);
         }).catch(error => {
           this.paymentForm.controls['card'].setErrors({ 'number': true });
         });
@@ -162,10 +162,8 @@ export class PagSeguroComponent implements OnInit {
   */
 
   fetchZip(zip) {
-    console.debug('fetching zip for', zip);
     this.pagSeguroService.fetchZip(zip).then(address => {
       if (address) {
-        console.debug('got address', address);
         this.pagSeguroService.patchAddress(this.pagSeguroService.matchAddress(address.json()).creditCard.billingAddress);
       }
     });

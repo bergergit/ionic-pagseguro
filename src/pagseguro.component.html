@@ -50,14 +50,16 @@
 
         <ion-item no-padding>
           <ion-label stacked>Validade (mês/ano)
-            <!-- <ion-note margin-left ion-text color="danger" *ngIf="paymentForm.get('card').hasError('number') && paymentForm.get('card').get('cardNumber').touched">Número de cartão inválido</ion-note> -->
+            <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('card').get('validity').valid && paymentForm.get('card').get('validity').touched">Campo obrigatório</ion-note>
           </ion-label>
           <ion-datetime displayFormat="MM/YYYY" max="2050-12-31" min="2016-01-01" doneText="OK" cancelText="Cancelar" formControlName="validity"
             no-margin></ion-datetime>
         </ion-item>
 
         <ion-item>
-          <ion-label stacked>Código de segurança</ion-label>
+          <ion-label stacked>Código de segurança
+            <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('card').get('cvv').valid && paymentForm.get('card').get('cvv').touched">Campo obrigatório</ion-note>
+          </ion-label>
           <ion-input type="number" formControlName="cvv" [attr.maxlength]="6"></ion-input>
         </ion-item>
 
@@ -69,7 +71,14 @@
           <ion-input type="text" formControlName="cpf"></ion-input>
         </ion-item>
       </div>
-      
+ 
+      <ion-item no-padding>
+        <ion-label stacked>Data de nascimento
+          <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('birthDate').valid && paymentForm.get('birthDate').touched">Campo obrigatório</ion-note>
+        </ion-label>
+        <ion-datetime displayFormat="DD/MM/YYYY" max="2018-12-31" min="1920-01-01" doneText="OK" cancelText="Cancelar" formControlName="birthDate" no-margin></ion-datetime>
+      </ion-item>
+
       <ion-item>
         <ion-label stacked>Telefone do titular
           <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('phone').valid && paymentForm.get('phone').touched">Número inválido</ion-note>
@@ -106,12 +115,22 @@
 
   </ion-list>
 
-  <ion-row>
+  <ion-row justify-content-center>
+    <ion-col col-12 col-lg-6>
+      <div class="pagseguro-area">
+        <p>Pagamento processado pelo
+          <span class="pagseguro-logo"></span>
+        </p>
+      </div>
+    </ion-col>
     <ion-col right text-right>
       <button ion-button color="primary" icon-right (click)="doCheckout()" [disabled]="!paymentForm.valid || processing">
         Efetuar pagamento
       </button>
     </ion-col>
+  </ion-row>
+  <ion-row>
+
   </ion-row>
 </form>
 

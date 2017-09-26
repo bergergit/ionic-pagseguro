@@ -34,6 +34,11 @@ export interface PagSeguroData {
                     type: string;
                     value: string;
                 }
+            },
+            birthDate?: string;
+            phone?: {
+                areaCode: string;
+                number: string;
             }
         },
         billingAddress?: {
