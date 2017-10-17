@@ -316,7 +316,7 @@ export class PagSeguroService {
           billingAddress: {
             state: address.uf,
             country: 'BRA',
-            postalCode: address.cep.replace('-', ''),
+            postalCode: address && address.cep ? address.cep.replace('-', '') : '',
             number: '',
             city: address.localidade,
             street: address.logradouro,
