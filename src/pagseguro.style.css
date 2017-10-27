@@ -1,5 +1,9 @@
 input:focus + .alert { display: none; }
 
+.list-md .item-input:last-child {
+    border-bottom: none;
+}
+
 .pagseguro .segment-ios ion-segment-button { 
     height: 56px;
 }
@@ -15,6 +19,10 @@ input:focus + .alert { display: none; }
     height: 40px;
     padding-top: 10px;
     font-size: 80%;
+}
+
+.pagseguro-boleto {
+    background-color: transparent;
 }
 
 .pagseguro-area::before {

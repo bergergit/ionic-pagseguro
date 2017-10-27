@@ -1,12 +1,11 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { PagSeguroService } from './pagseguro.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-//import { PagSeguroData } from './pagseguro.data';
-//import { PagSeguroOptions } from "./pagseguro.options";
-//import { Utils } from './utils';
-     
-declare var PagSeguroDirectPayment: any;
+//import * as moment from 'moment';
+import moment from 'moment';
 
+declare var PagSeguroDirectPayment: any;
+ 
 @Component({
   selector: 'pagseguro-component',
   templateUrl: 'pagseguro.component.html',
@@ -16,20 +15,28 @@ export class PagSeguroComponent implements OnInit {
  
   @Output() checkout:EventEmitter<string> = new EventEmitter();
 
-  //private options: PagSeguroOptions;
+  DATE_FORMAT = 'YYYY-MM-DD';
   paymentMethods;
   private sessionId: number;
   public cardBrand: any;
   public paymentForm: FormGroup;
   public processing = false;
 
+  dateMax: string;
+  dateMin: string;
+ 
+
   constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder) {
+
+    this.dateMin = moment().format(this.DATE_FORMAT);
+    this.dateMax = moment().add(20, 'years').format(this.DATE_FORMAT);
     
   }   
 
   ngOnInit() {  
-    this.initForm(); 
+    this.initFormCard(); 
     this.pagSeguroService.setForm(this.paymentForm);
+    this.pagSeguroService.restoreCheckoutData();
     // carrega o .js do PagSeguro
     this.pagSeguroService.loadScript().then(_ => {
       //this.pagSeguroService.startSession().subscribe(result => {
@@ -54,10 +61,10 @@ export class PagSeguroComponent implements OnInit {
   /**
    * Inicializar o FormGroup usado para recuperar as informações do usuário
    */
-  initForm() {
+  initFormCard() {
     // this.pagSeguroService.checkoutData.sender.name
     this.paymentForm = this.formBuilder.group({
-      paymentMethod: ['card'],
+      paymentMethod: ['creditCard'],
       card: this.formBuilder.group({
         cardNumber: ['', [Validators.required, Validators.maxLength(16)]],
         name: ['', [Validators.required]],
@@ -74,16 +81,36 @@ export class PagSeguroComponent implements OnInit {
         street: ['', [Validators.required]],
         district: ['']
       }),
-      phone: ['', [Validators.required, Validators.minLength(10)]],
+      phone: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(11)]],
       birthDate: ['', [Validators.required]]
 
     });
-  } 
+
+    
+  }
+
+  initFormBoleto() {
+    this.paymentForm = this.formBuilder.group({
+      paymentMethod: ['boleto'],
+      phone: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(11)]]
+    });
+  }
+
+  paymentOptionChanged() {
+    if (this.paymentForm.value.paymentMethod === 'boleto') {
+      this.initFormBoleto();
+    } else {
+      this.initFormCard();
+      //this.paymentForm.updateValueAndValidity();
+    }
+    this.pagSeguroService.setForm(this.paymentForm);
+    this.pagSeguroService.restoreCheckoutData();
+  }
 
   initializeComponent() {
     this.pagSeguroService.loadScript();
   }
-
+ 
   /**
    * Recupera a bandeira do cartão, ao se digitar os primeiros 6 numeros
    */
@@ -130,41 +157,15 @@ export class PagSeguroComponent implements OnInit {
   public doCheckout() {
     this.processing = true;
     if (this.checkout) {
-      //this.checkout().then(_ => this.processing = false).catch(_ => this.processing = false);
       this.checkout.emit('checkout');
       this.processing = false;
-    } else {
-      //this.internalCheckout().then(_ => this.processing = false).catch(_ => this.processing = false);
     } 
-
   }
-
-  /**
-   * Invoca o checkout do PagSeguro
-   */
-  /*
-  private internalCheckout(): Promise<any> {
-    //this.processing = true;
-    return this.utils.executePromiseWithMessage(this.pagSeguroService.checkout(), true, "Processando pagamento...").then(result => {
-      //this.processing = false;
-      console.debug('checkout result', result);
-    }).catch(error => {
-      //this.processing = false;
-      console.error('Erro no checkout', error);
-      if (error.status == 401) {
-        this.utils.showErrorAlert("Erro ao processar o pagamento", "Pagamento não autorizado");
-      } else {
-        this.utils.showErrorAlert("Erro ao processar o pagamento", JSON.stringify(error.errors || error.statusText));
-      }
-      
-    });
-  }
-  */
 
   fetchZip(zip) {
     this.pagSeguroService.fetchZip(zip).then(address => {
       if (address) {
-        this.pagSeguroService.patchAddress(this.pagSeguroService.matchAddress(address.json()).creditCard.billingAddress);
+        this.pagSeguroService.patchAddress(this.pagSeguroService.matchAddress(address.json()).creditCard.billingAddress, true);
       }
     });
   }

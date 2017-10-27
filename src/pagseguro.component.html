@@ -1,4 +1,3 @@
-<!-- <ion-card no-margin margin-top class="pagseguro" *ngIf="!paymentMethods" color="dark"> -->
 <ion-row class="pagseguro" align-items-center *ngIf="!paymentMethods">
   <ion-col col-2 col-md-1>
     <ion-spinner></ion-spinner>
@@ -7,29 +6,26 @@
     <p>Carregando opções de pagamento...</p>
   </ion-col>
 </ion-row>
-<!-- </ion-card> -->
 
-<!-- <ion-card no-margin margin-top class="pagseguro" *ngIf="paymentMethods" color="dark"> -->
 <form [formGroup]="paymentForm" class="pagseguro" *ngIf="paymentMethods" no-padding no-margin margin-top>
-  <p margin-top ion-text color="secondary">Forma de pagamento</p>
-  <ion-segment color="primary" formControlName="paymentMethod">
-    <ion-segment-button value="card">
+  <h5 margin-top ion-text color="secondary">Forma de pagamento</h5>
+  <ion-segment color="primary" formControlName="paymentMethod" (ionChange)="paymentOptionChanged()">
+    <ion-segment-button value="creditCard">
       <ion-icon name="card"></ion-icon>
-      <label>Cartão</label>
+      <label>Cartão</label> 
     </ion-segment-button>
     <ion-segment-button value="boleto">
       <ion-icon name="barcode"></ion-icon>
       <label>Boleto</label>
     </ion-segment-button>
-    <!-- <ion-segment-button value="debito">
+        <!-- <ion-segment-button value="debito">
           <ion-icon ios="ios-at-outline" md="md-at"></ion-icon>
         </ion-segment-button> -->
   </ion-segment>
 
-  <ion-list no-padding no-margin inset>
+  <ion-list no-padding no-margin padding-top>
     <!-- Formulario de cartao de credito -->
-    <!-- <div *ngIf="paymentForm.value.paymentMethod == 'card'"> -->
-    <div *ngIf="paymentForm.value.paymentMethod == 'card'">
+    <div *ngIf="paymentForm.value.paymentMethod == 'creditCard'">
 
       <div formGroupName="card">
         <ion-item>
@@ -48,12 +44,11 @@
           <ion-input type="text" formControlName="name"></ion-input>
         </ion-item>
 
-        <ion-item no-padding>
+        <ion-item>
           <ion-label stacked>Validade (mês/ano)
             <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('card').get('validity').valid && paymentForm.get('card').get('validity').touched">Campo obrigatório</ion-note>
           </ion-label>
-          <ion-datetime displayFormat="MM/YYYY" max="2050-12-31" min="2016-01-01" doneText="OK" cancelText="Cancelar" formControlName="validity"
-            no-margin></ion-datetime>
+          <ion-datetime displayFormat="MM/YYYY" [max]="dateMax" [min]="dateMin" doneText="OK" cancelText="Cancelar" formControlName="validity"></ion-datetime>
         </ion-item>
 
         <ion-item>
@@ -72,11 +67,11 @@
         </ion-item>
       </div>
  
-      <ion-item no-padding>
+      <ion-item>
         <ion-label stacked>Data de nascimento
           <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('birthDate').valid && paymentForm.get('birthDate').touched">Campo obrigatório</ion-note>
         </ion-label>
-        <ion-datetime displayFormat="DD/MM/YYYY" max="2018-12-31" min="1920-01-01" doneText="OK" cancelText="Cancelar" formControlName="birthDate" no-margin></ion-datetime>
+        <ion-datetime displayFormat="DD/MM/YYYY" max="2018-12-31" min="1920-01-01" doneText="OK" cancelText="Cancelar" formControlName="birthDate"></ion-datetime>
       </ion-item>
 
       <ion-item>
@@ -111,7 +106,25 @@
         </ion-item>
       </div>
 
+    </div> 
+
+    <!-- Formulario de cartao de credito -->
+    <div *ngIf="paymentForm.value.paymentMethod == 'boleto'" padding-top>
+    <ion-item>
+        <ion-label stacked>Digite seu telefone
+          <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('phone').valid && paymentForm.get('phone').touched">Número inválido</ion-note>
+        </ion-label>
+        <ion-input type="text" formControlName="phone"></ion-input>
+      </ion-item>
+      
+      <ion-item class="pagseguro-boleto">
+        <h2 ion-text color="secondary">Ao clicar em "Efetuar pagamento", você visualizará o link para o geração do boleto.</h2>
+        <h2 ion-text color="secondary">Você também receberá o boleto por e-mail.</h2>
+        <br/>
+        <p ion-text color="secondary">Seu serviço só ficará visível publicamente, após a confirmação de pagamento do boleto.</p>
+      </ion-item>
     </div>
+          
 
   </ion-list>
 
@@ -134,12 +147,3 @@
   </ion-row>
 </form>
 
-
-<!-- <ion-list style="margin: 0" inset>
-        <button ion-item *ngFor="let sItem of getSafariItems(safari)">
-          <ion-icon item-start [name]="sItem.icon" color="primary"></ion-icon>
-          {{ sItem.name }}
-        </button> 
-      </ion-list> -->
-<!-- </ion-card-content> -->
-<!-- </ion-card> -->

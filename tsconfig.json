@@ -1,6 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
     "baseUrl": "./src",
     "experimentalDecorators": true,

@@ -71,7 +71,6 @@
     "node": ">=6.0.0"
   },
   "dependencies": {
-    "@ionic-native/camera": "^4.1.0",
-    "@ionic-native/facebook": "^4.1.0"
+    "moment": "^2.19.1"
   }
 }

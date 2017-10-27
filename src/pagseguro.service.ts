@@ -22,7 +22,7 @@ export class PagSeguroService {
   public creditCardHash;
   private checkoutData: PagSeguroData;
   private paymentForm: FormGroup;
-
+  
   constructor(private http: Http) {
     this.options = PagSeguroDefaultOptions;
   }
@@ -37,6 +37,10 @@ export class PagSeguroService {
 
   public setForm(paymentForm: FormGroup) {
     this.paymentForm = paymentForm;
+  }
+
+  public getSelectedPaymentMethod(): string {
+    return this.paymentForm.value.paymentMethod; 
   }
 
   /**
@@ -74,7 +78,7 @@ export class PagSeguroService {
   }
 
   /**
-   * Rexupera as opções de pagamento. 
+   * Recupera as opções de pagamento. 
    * Esta funcção deve ser chamada após já termos iniciado a sessão, pelo startSession()
    */
   public getPaymentMethods(amount: number): Promise<any> {
@@ -120,17 +124,17 @@ export class PagSeguroService {
     this.checkoutData = Object.assign(this.checkoutData || {}, data);
     //this.checkoutData = Object.assign(data, this.checkoutData || {});
 
-    if (!skipPatchForm) {
+    if (!skipPatchForm) {  
 
       // adiciona alguns campos no próprio formulario de checkout
-      if (this.checkoutData.sender && this.checkoutData.sender.name) {
+      if (this.checkoutData.sender && this.checkoutData.sender.name && this.paymentForm && this.paymentForm.value.card && !this.paymentForm.value.card.name) {
         this.paymentForm.patchValue({
           card: {
             name: this.checkoutData.sender.name
           }
         });
 
-        if (this.checkoutData.sender.documents && this.checkoutData.sender.documents.document.type === 'CPF') {
+        if (this.checkoutData.sender.documents && this.checkoutData.sender.documents.document.type === 'CPF' && this.paymentForm.value.card && !this.paymentForm.value.card.cpf) {
           this.paymentForm.patchValue({
             card: {
               cpf: this.checkoutData.sender.documents.document.value
@@ -138,7 +142,7 @@ export class PagSeguroService {
           });
         }
 
-        if (this.checkoutData.sender.phone) {
+        if (this.checkoutData.sender.phone && !this.paymentForm.value.phone) {
           this.paymentForm.patchValue({
             phone: this.checkoutData.sender.phone.areaCode + this.checkoutData.sender.phone.number
           })
@@ -148,13 +152,20 @@ export class PagSeguroService {
       if (this.checkoutData.creditCard && this.checkoutData.creditCard.billingAddress) {
         this.patchAddress(this.checkoutData.creditCard.billingAddress);
       }
+
     }
   } 
 
-  public patchAddress(address) {
-    this.paymentForm.patchValue({
-      address: address
-    });
+  public restoreCheckoutData() {
+    this.addCheckoutData(this.checkoutData);
+  }
+
+  public patchAddress(address, force?: boolean) {
+    if (this.paymentForm && (!this.paymentForm.value.address || force)) {
+      this.paymentForm.patchValue({
+        address: address
+      });
+    }
   }
 
   
@@ -175,37 +186,45 @@ export class PagSeguroService {
    */
   buildPagSeguroData(): PagSeguroData {
     let data: PagSeguroData = {
-      method: 'creditCard',
+      method: this.paymentForm.value.paymentMethod,
       shipping: {
         addressRequired: false
       },
-      creditCard: {
-        cardNumber: this.paymentForm.value.card.cardNumber,
-        cvv: this.paymentForm.value.card.cvv,
-        expirationMonth: this.paymentForm.value.card.validity.substring(5),
-        expirationYear: this.paymentForm.value.card.validity.substring(0, 4),
-        billingAddress: this.paymentForm.value.address,
-        holder: {
-          name: this.paymentForm.value.card.name,
-          documents: {
-            document: {
-              type: 'CPF',
-              value: this.paymentForm.value.card.cpf
-            }
-          },
-          phone: {
-            areaCode: this.paymentForm.value.phone.substring(0, 2),
-            number: this.paymentForm.value.phone.substring(2)
-          },
-          birthDate: this.convertIsoDate(this.paymentForm.value.birthDate)
-        }
-      },
+      
       sender: {
         phone: {
           areaCode: this.paymentForm.value.phone.substring(0, 2),
           number: this.paymentForm.value.phone.substring(2)
         }
       }
+    }
+
+    if (this.paymentForm.value.paymentMethod == 'creditCard') {
+      let cardData: PagSeguroData = {
+        creditCard: {
+          cardNumber: this.paymentForm.value.card.cardNumber,
+          cvv: this.paymentForm.value.card.cvv,
+          expirationMonth: this.paymentForm.value.card.validity.substring(5),
+          expirationYear: this.paymentForm.value.card.validity.substring(0, 4),
+          billingAddress: this.paymentForm.value.address,
+          holder: {
+            name: this.paymentForm.value.card.name,
+            documents: {
+              document: {
+                type: 'CPF',
+                value: this.paymentForm.value.card.cpf
+              }
+            },
+            phone: {
+              areaCode: this.paymentForm.value.phone.substring(0, 2),
+              number: this.paymentForm.value.phone.substring(2)
+            },
+            birthDate: this.convertIsoDate(this.paymentForm.value.birthDate)
+          }
+        }
+      } 
+
+      data = Object.assign(data, cardData);
     }
     return data;
   }
@@ -225,34 +244,24 @@ export class PagSeguroService {
     data.sender.documents = this.checkoutData.sender.documents;
 
     data = Object.assign(this.checkoutData, data);
-    //data = Object.assign(data, this.checkoutData);
-    data.sender.hash = PagSeguroDirectPayment.getSenderHash();
 
-    // recupera o token do cartao de crédito
-    //var promise = new Promise((resolve, reject) => {
-      if (data.method == 'creditCard') {
-        return this.createCardToken(data).then(result => {
-          data.creditCard.token = result.card.token;
+    if (data.method === 'creditCard') {
+      // recupera o token do cartao de crédito
+      data.sender.hash = PagSeguroDirectPayment.getSenderHash();
+      return this.createCardToken(data).then(result => {
+        data.creditCard.token = result.card.token;
 
-          // removendo dados nao necessarios do cartao
-          delete (data.creditCard.cardNumber);
-          delete (data.creditCard.cvv);
-          delete (data.creditCard.expirationMonth);
-          delete (data.creditCard.expirationYear);
+        // removendo dados nao necessarios do cartao
+        delete (data.creditCard.cardNumber);
+        delete (data.creditCard.cvv);
+        delete (data.creditCard.expirationMonth);
+        delete (data.creditCard.expirationYear);
 
-          return this._checkout(data);
-        });
-        /*
-        .catch(error => {
-          console.error('error ao criar token do cartao', error);
-          reject(error);
-        });
-        */
-      } else {
         return this._checkout(data);
-      }
-    //});
-    //return promise;
+      });
+    } else {
+      return this._checkout(data);
+    }
   }
 
   /**
