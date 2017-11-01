@@ -3,7 +3,7 @@ import { PagSeguroDefaultOptions } from './pagseguro.defaults';
 import { RequestOptions, Http, Headers } from '@angular/http';
 import { PagSeguroOptions } from './pagseguro.options';
 //import { Observable } from "rxjs/Observable";
-     
+
 import { PagSeguroData } from './pagseguro.data';
 import { FormGroup } from '@angular/forms';
 
@@ -12,9 +12,9 @@ import 'rxjs/add/operator/toPromise';
 
 declare var PagSeguroDirectPayment: any;
 
-@Injectable() 
+@Injectable()
 export class PagSeguroService {
- 
+
   private ZIP_URL = 'https://viacep.com.br/ws';
 
   private scriptLoaded: boolean;
@@ -22,7 +22,7 @@ export class PagSeguroService {
   public creditCardHash;
   private checkoutData: PagSeguroData;
   private paymentForm: FormGroup;
-  
+
   constructor(private http: Http) {
     this.options = PagSeguroDefaultOptions;
   }
@@ -33,14 +33,14 @@ export class PagSeguroService {
 
   public getOptions(): PagSeguroOptions {
     return this.options;
-  } 
+  }
 
   public setForm(paymentForm: FormGroup) {
     this.paymentForm = paymentForm;
   }
 
   public getSelectedPaymentMethod(): string {
-    return this.paymentForm.value.paymentMethod; 
+    return this.paymentForm.value.paymentMethod;
   }
 
   /**
@@ -113,26 +113,29 @@ export class PagSeguroService {
       });
     });
     return promise;
-  } 
+  }
 
-  
+
   /**
    * Use esta função para definir os itens e valores que devem entrar no checkout do PagSeguro
    * @param data 
    */
-  public addCheckoutData(data: PagSeguroData, skipPatchForm?: boolean) { 
+  public addCheckoutData(data: PagSeguroData, skipPatchForm?: boolean) {
     this.checkoutData = Object.assign(this.checkoutData || {}, data);
     //this.checkoutData = Object.assign(data, this.checkoutData || {});
 
-    if (!skipPatchForm) {  
+    if (!skipPatchForm) {
 
       // adiciona alguns campos no próprio formulario de checkout
-      if (this.checkoutData.sender && this.checkoutData.sender.name && this.paymentForm && this.paymentForm.value.card && !this.paymentForm.value.card.name) {
-        this.paymentForm.patchValue({
-          card: {
-            name: this.checkoutData.sender.name
-          }
-        });
+      if (this.checkoutData && this.checkoutData.sender && this.paymentForm) {
+
+        if (this.checkoutData.sender.name && this.paymentForm.value.card && !this.paymentForm.value.card.name) {
+          this.paymentForm.patchValue({
+            card: {
+              name: this.checkoutData.sender.name
+            }
+          });
+        }
 
         if (this.checkoutData.sender.documents && this.checkoutData.sender.documents.document.type === 'CPF' && this.paymentForm.value.card && !this.paymentForm.value.card.cpf) {
           this.paymentForm.patchValue({
@@ -142,6 +145,8 @@ export class PagSeguroService {
           });
         }
 
+        console.debug('trying to add checkout data for phone', this.checkoutData.sender.phone, this.paymentForm.value.phone)
+
         if (this.checkoutData.sender.phone && !this.paymentForm.value.phone) {
           this.paymentForm.patchValue({
             phone: this.checkoutData.sender.phone.areaCode + this.checkoutData.sender.phone.number
@@ -149,12 +154,15 @@ export class PagSeguroService {
         }
       }
 
-      if (this.checkoutData.creditCard && this.checkoutData.creditCard.billingAddress) {
+      if (this.checkoutData && this.checkoutData.creditCard && this.checkoutData.creditCard.billingAddress) {
         this.patchAddress(this.checkoutData.creditCard.billingAddress);
       }
-
     }
-  } 
+
+
+
+
+  }
 
   public restoreCheckoutData() {
     this.addCheckoutData(this.checkoutData);
@@ -168,15 +176,15 @@ export class PagSeguroService {
     }
   }
 
-  
+
   /**
    * Converte do formato ISO (yyyy-MM-dd) para o formato do PagSeguro que é: dd/MM/yyyy
    * @param isoDate 
    */
   private convertIsoDate(isoDate): string {
     var ptrn = /(\d{4})\-(\d{2})\-(\d{2})/;
-    if(!isoDate || !isoDate.match(ptrn)) {
-        return null;
+    if (!isoDate || !isoDate.match(ptrn)) {
+      return null;
     }
     return isoDate.replace(ptrn, '$3/$2/$1');
   }
@@ -190,7 +198,7 @@ export class PagSeguroService {
       shipping: {
         addressRequired: false
       },
-      
+
       sender: {
         phone: {
           areaCode: this.paymentForm.value.phone.substring(0, 2),
@@ -222,14 +230,14 @@ export class PagSeguroService {
             birthDate: this.convertIsoDate(this.paymentForm.value.birthDate)
           }
         }
-      } 
+      }
 
       data = Object.assign(data, cardData);
     }
     return data;
   }
 
-  
+
 
   /**
    * Função que realiza o pagamento com o PagSeguro.
@@ -238,7 +246,7 @@ export class PagSeguroService {
    * @param data 
    */
   public checkout(): Promise<any> {
-    let data:PagSeguroData = this.buildPagSeguroData();
+    let data: PagSeguroData = this.buildPagSeguroData();
     data.sender.name = this.checkoutData.sender.name;
     data.sender.email = this.checkoutData.sender.email;
     data.sender.documents = this.checkoutData.sender.documents;
@@ -303,7 +311,7 @@ export class PagSeguroService {
       });
     });
     return promise;
-  } 
+  }
 
   /**
    * Fetches zip code information. (works for Brazil)
@@ -336,7 +344,7 @@ export class PagSeguroService {
       return addressData;
     }
     return null;
-    
+
   }
 
 }
