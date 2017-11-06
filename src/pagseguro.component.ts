@@ -147,7 +147,7 @@ export class PagSeguroComponent implements OnInit {
       return this.paymentMethods.CREDIT_CARD.options[this.cardBrand.name.toUpperCase()].displayName;
     } else {
       return '';
-    } 
+    }  
   }
 
   /**
