@@ -145,7 +145,6 @@ export class PagSeguroService {
           });
         }
 
-        console.debug('trying to add checkout data for phone', this.checkoutData.sender.phone, this.paymentForm.value.phone)
 
         if (this.checkoutData.sender.phone && !this.paymentForm.value.phone) {
           this.paymentForm.patchValue({
@@ -155,7 +154,7 @@ export class PagSeguroService {
       }
 
       if (this.checkoutData && this.checkoutData.creditCard && this.checkoutData.creditCard.billingAddress) {
-        this.patchAddress(this.checkoutData.creditCard.billingAddress);
+        this.patchAddress(this.checkoutData.creditCard.billingAddress, true);
       }
     }
 
@@ -169,6 +168,7 @@ export class PagSeguroService {
   }
 
   public patchAddress(address, force?: boolean) {
+    console.debug('trying to patch address with address', address);
     if (this.paymentForm && (!this.paymentForm.value.address || force)) {
       this.paymentForm.patchValue({
         address: address
