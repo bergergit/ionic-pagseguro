@@ -163,11 +163,7 @@ export class PagSeguroComponent implements OnInit {
   }
 
   fetchZip(zip) {
-    this.pagSeguroService.fetchZip(zip).then(address => {
-      if (address) {
-        this.pagSeguroService.patchAddress(this.pagSeguroService.matchAddress(address.json()).creditCard.billingAddress, true);
-      }
-    });
+    this.pagSeguroService.fetchZip(zip, true);
   }
 
   
