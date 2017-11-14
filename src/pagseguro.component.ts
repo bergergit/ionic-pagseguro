@@ -3,6 +3,7 @@ import { PagSeguroService } from './pagseguro.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 //import * as moment from 'moment';
 import moment from 'moment';
+import {Subscription} from 'rxjs/Subscription';
 
 declare var PagSeguroDirectPayment: any;
  
@@ -21,11 +22,13 @@ export class PagSeguroComponent implements OnInit {
   public cardBrand: any;
   public paymentForm: FormGroup;
   public processing = false;
+  installments: any;
+  private amountSubscription: Subscription;
+  private amount: number;
 
   dateMax: string;
   dateMin: string;
  
-
   constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder) {
 
     this.dateMin = moment().format(this.DATE_FORMAT);
@@ -37,6 +40,11 @@ export class PagSeguroComponent implements OnInit {
     this.initFormCard(); 
     this.pagSeguroService.setForm(this.paymentForm);
     this.pagSeguroService.restoreCheckoutData();
+    this.amountSubscription = this.pagSeguroService.amount$.subscribe(amount => {
+      this.amount = amount;
+      this.fetchInstallments();
+    });
+
     // carrega o .js do PagSeguro
     this.pagSeguroService.loadScript().then(_ => {
       //this.pagSeguroService.startSession().subscribe(result => {
@@ -46,7 +54,7 @@ export class PagSeguroComponent implements OnInit {
         PagSeguroDirectPayment.setSessionId(this.sessionId);
 
         // recupera as opçoes de pagamento
-        this.pagSeguroService.getPaymentMethods(100).then(response => {
+        this.pagSeguroService.getPaymentMethods(this.amount || 100).then(response => {
           //console.debug('paymentMethods', response);
           this.paymentMethods = response.paymentMethods;
         }).catch(error => {
@@ -69,6 +77,7 @@ export class PagSeguroComponent implements OnInit {
         cardNumber: ['', [Validators.required, Validators.maxLength(16)]],
         name: ['', [Validators.required]],
         validity: ['', [Validators.required]],
+        installments: ['', [Validators.required]],
         cvv: ['', [Validators.required, Validators.minLength(3)]],
         cpf: ['', [Validators.required]]
       }),
@@ -109,7 +118,7 @@ export class PagSeguroComponent implements OnInit {
 
   initializeComponent() {
     this.pagSeguroService.loadScript();
-  }
+  } 
  
   /**
    * Recupera a bandeira do cartão, ao se digitar os primeiros 6 numeros
@@ -119,13 +128,33 @@ export class PagSeguroComponent implements OnInit {
       if (!this.cardBrand) {
         this.pagSeguroService.getCardBrand(this.paymentForm.value.card.cardNumber).then(result => {
           this.cardBrand = result.brand;
+          this.fetchInstallments();
         }).catch(error => {
-          this.paymentForm.controls['card'].setErrors({ 'number': true });
+          this.paymentForm.controls['card'].setErrors({ 'cardNumber': true });
         });
       }
     } else {
       this.cardBrand = null;
     }
+  } 
+
+  fetchInstallments() {
+    this.installments = 0;
+    this.paymentForm.patchValue({card: {installments: ''}});
+    if (this.cardBrand) {
+      this.pagSeguroService.getInstallments(this.amount, this.cardBrand.name, 6).then(result => {
+        this.installments = result.installments[this.cardBrand.name];
+        this.paymentForm.patchValue({
+          card: {
+            installments: this.installments[0].quantity
+          }
+        });
+      }).catch(error => {
+        console.error('error getting installments', error);
+        this.paymentForm.controls['card'].setErrors({ 'installments': true });
+      });
+    }
+
   }
 
   /**

@@ -1,13 +1,16 @@
-<ion-row class="pagseguro" align-items-center *ngIf="!paymentMethods">
+<!-- <ion-row class="pagseguro" align-items-center *ngIf="!paymentMethods"> -->
+<!-- <ion-row class="pagseguro" align-items-center *ngIf="!sessionId">
   <ion-col col-2 col-md-1>
     <ion-spinner></ion-spinner>
   </ion-col>
   <ion-col>
     <p>Carregando opções de pagamento...</p>
   </ion-col>
-</ion-row>
+</ion-row> -->
 
-<form [formGroup]="paymentForm" class="pagseguro" *ngIf="paymentMethods" no-padding no-margin margin-top>
+<!-- <form [formGroup]="paymentForm" class="pagseguro" *ngIf="paymentMethods" no-padding no-margin margin-top> -->
+<form [formGroup]="paymentForm" class="pagseguro" no-padding no-margin margin-top>
+        
   <h5 margin-top ion-text color="secondary">Forma de pagamento</h5>
   <ion-segment color="primary" formControlName="paymentMethod" (ionChange)="paymentOptionChanged()">
     <ion-segment-button value="creditCard">
@@ -58,6 +61,14 @@
           <ion-input type="number" formControlName="cvv" [attr.maxlength]="6"></ion-input>
         </ion-item>
 
+        <ion-item *ngIf="installments">
+          <ion-label stacked>Parcelas
+            <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('card').get('installments').valid && paymentForm.get('card').get('installments').touched">Campo obrigatório</ion-note>
+          </ion-label>
+          <ion-select okText="OK" cancelText="Cancelar" formControlName="installments">
+            <ion-option *ngFor="let item of installments" [value]="item.quantity">{{ item.quantity }} x {{ item.installmentAmount | psCurrencyFormat:'BRL':true }}</ion-option>
+          </ion-select>
+        </ion-item>
 
         <ion-item>
           <ion-label stacked>CPF do titular
@@ -65,6 +76,7 @@
           </ion-label>
           <ion-input type="text" formControlName="cpf"></ion-input>
         </ion-item>
+
       </div>
  
       <ion-item>

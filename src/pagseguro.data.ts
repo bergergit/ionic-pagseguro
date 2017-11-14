@@ -27,6 +27,11 @@ export interface PagSeguroData {
         expirationMonth?: string;
         expirationYear?: string;
         token?: string;
+        installment?: {
+            quantity: number,
+            noInterestInstallmentQuantity: number,
+            value: number
+        }
         holder?: {
             name?: string; 
             documents?: {

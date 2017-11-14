@@ -6,9 +6,12 @@ import { PagSeguroOptions } from './pagseguro.options';
 
 import { PagSeguroData } from './pagseguro.data';
 import { FormGroup } from '@angular/forms';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
+import { Observable } from 'rxjs/Observable';
+
 
 declare var PagSeguroDirectPayment: any;
 
@@ -24,9 +27,15 @@ export class PagSeguroService {
   private checkoutData: PagSeguroData;
   private paymentForm: FormGroup;
   private apiKey: string;
+  private amountSource: BehaviorSubject<number>;
+  public amount$: Observable<number>;
+  private maxInstallmentNoInterest: number;
+  installments: any;
 
   constructor(private http: Http) {
     this.options = PagSeguroDefaultOptions;
+    this.amountSource = new BehaviorSubject<number>(0);
+    this.amount$ = this.amountSource.asObservable();
   }
 
   public setOptions(options: PagSeguroOptions) {
@@ -40,6 +49,14 @@ export class PagSeguroService {
   public setForm(paymentForm: FormGroup) {
     this.paymentForm = paymentForm;
   }
+
+  public setAmount(amount: number) {
+    this.amountSource.next(amount);
+  }
+
+  // public getAmount(): number {
+  //   return this.amount;
+  // }
 
   public getSelectedPaymentMethod(): string {
     return this.paymentForm.value.paymentMethod;
@@ -97,6 +114,29 @@ export class PagSeguroService {
       });
     });
     return promise;
+  }
+
+  public getInstallments(amount: number, brand: string, maxInstallmentNoInterest: number): Promise<any> {
+    console.debug('amount, brand, maxInstallmentNoInterest', amount, brand, maxInstallmentNoInterest);
+    this.maxInstallmentNoInterest = maxInstallmentNoInterest;
+    var that = this;
+    var promise = new Promise((resolve, reject) => {
+      PagSeguroDirectPayment.getInstallments({
+        amount: amount,
+        brand: brand,
+        maxInstallmentNoInterest: maxInstallmentNoInterest,
+        success: function (response) {
+          that.installments = response.installments[brand];
+          resolve(response);
+        },
+        error: function (response) {
+          reject(response);
+        },
+      });
+    });
+
+    return promise;
+
   }
 
   /**
@@ -162,9 +202,6 @@ export class PagSeguroService {
       }
     }
 
-
-
-
   }
 
   public restoreCheckoutData() {
@@ -193,6 +230,16 @@ export class PagSeguroService {
     return isoDate.replace(ptrn, '$3/$2/$1');
   }
 
+  /**
+   * Recupera o valor da parcela individual para a quantidade de parcelas selecionadas
+   */
+  private getAmountForInstallmentQuantity(quantity) {
+    for (let i = 0; i < this.installments.length; i++) {
+      if (this.installments[i].quantity == quantity) return this.installments[i].installmentAmount.toFixed(2);
+    }
+    return '0.00';
+  } 
+
   /**  
    * Monta o objeto necessário para a API do PagSeguro
    */
@@ -201,7 +248,7 @@ export class PagSeguroService {
       method: this.paymentForm.value.paymentMethod,
       shipping: {
         addressRequired: false
-      },
+      }, 
 
       sender: {
         phone: {
@@ -219,6 +266,11 @@ export class PagSeguroService {
           expirationMonth: this.paymentForm.value.card.validity.substring(5),
           expirationYear: this.paymentForm.value.card.validity.substring(0, 4),
           billingAddress: this.paymentForm.value.address,
+          installment: {
+            quantity: this.paymentForm.value.card.installments,
+            noInterestInstallmentQuantity: this.maxInstallmentNoInterest,
+            value: this.getAmountForInstallmentQuantity(this.paymentForm.value.card.installments)
+          },
           holder: {
             name: this.paymentForm.value.card.name,
             documents: {
@@ -349,20 +401,20 @@ export class PagSeguroService {
     });
 
     return addressPromise;
-  } 
+  }
 
   public fetchLatLong(location): Promise<any> {
     //return this.httpClient.get<any>(`${this.ZIP_URL}/${zip}/json`).retry(2);
     //return this.http.get(`${this.ZIP_URL}/${zip}/json`).toPromise();
     return this.http.get(`${this.ZIP_URL}?latlng=${location.lat},${location.lng}&language=pt-BR&key=${this.apiKey}`).map((res) => res.json()).toPromise();
-  } 
-  
+  }
+
   /**
    * Permite que o cliente defina a API KEY do Google
    */
   public setApiKey(apiKey: string) {
     this.apiKey = apiKey;
-  } 
+  }
 
   /**
    * Faz um match dos dados retornados pelo Viacep, com o formato necessário para o PagSeguro
@@ -374,7 +426,7 @@ export class PagSeguroService {
       this.fetchLatLong(address.geometry.location).then(detailedAddressResult => {
         console.debug('matchAddress, got detailedAddress', detailedAddressResult);
         let detailedAddress = detailedAddressResult.results && detailedAddressResult.results[0] || null;
-         
+
         let addressData: PagSeguroData = {
           creditCard: {
             billingAddress: {
@@ -394,7 +446,7 @@ export class PagSeguroService {
               street: detailedAddress ? this.extractField('route', detailedAddress) : '',
               district: this.extractField('sublocality_level_1', address)
             }
-          } 
+          }
         }
         this.addCheckoutData(addressData);
         //return addressData;
