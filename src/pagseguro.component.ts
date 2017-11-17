@@ -66,6 +66,12 @@ export class PagSeguroComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    if (this.amountSubscription) {
+      this.amountSubscription.unsubscribe();
+    }
+  }
+
   /**
    * Inicializar o FormGroup usado para recuperar as informações do usuário
    */
