@@ -117,7 +117,6 @@ export class PagSeguroService {
   }
 
   public getInstallments(amount: number, brand: string, maxInstallmentNoInterest: number): Promise<any> {
-    console.debug('amount, brand, maxInstallmentNoInterest', amount, brand, maxInstallmentNoInterest);
     this.maxInstallmentNoInterest = maxInstallmentNoInterest;
     var that = this;
     var promise = new Promise((resolve, reject) => {
@@ -157,6 +156,10 @@ export class PagSeguroService {
     return promise;
   }
 
+  public removeCheckoutData() {
+    this.checkoutData = null;
+  }
+
 
   /**
    * Use esta função para definir os itens e valores que devem entrar no checkout do PagSeguro
@@ -165,8 +168,6 @@ export class PagSeguroService {
   public addCheckoutData(data: PagSeguroData, skipPatchForm?: boolean) {
     this.checkoutData = Object.assign(this.checkoutData || {}, data);
     //this.checkoutData = Object.assign(data, this.checkoutData || {});
-
-    console.debug('addCheckoutData has data', this.checkoutData);
 
     if (!skipPatchForm) {
 
@@ -209,7 +210,6 @@ export class PagSeguroService {
   }
 
   public patchAddress(address, force?: boolean) {
-    console.debug('trying to patch address with address', address);
     if (this.paymentForm && (!this.paymentForm.value.address || force)) {
       this.paymentForm.patchValue({
         address: address
@@ -392,7 +392,7 @@ export class PagSeguroService {
   public fetchZip(zip: string, addToCheckoutData: boolean): Promise<any> {
     //return this.httpClient.get<any>(`${this.ZIP_URL}/${zip}/json`).retry(2);
     //return this.http.get(`${this.ZIP_URL}/${zip}/json`).toPromise();
-    let addressPromise = this.http.get(`${this.ZIP_URL}?address=${zip}&language=pt-BR&key=${this.apiKey}`).map((res) => res.json()).toPromise();
+    let addressPromise = this.http.get(`${this.ZIP_URL}?address=${zip}&language=pt-BR&region=br&key=${this.apiKey}`).map((res) => res.json()).toPromise();
     addressPromise.then((info) => {
       if (addToCheckoutData && info.results && info.results[0]) {
         //this.pagSeguroService.addCheckoutData(this.pagSeguroService.matchAddress(info.results[0]));
@@ -418,13 +418,11 @@ export class PagSeguroService {
 
   /**
    * Faz um match dos dados retornados pelo Viacep, com o formato necessário para o PagSeguro
-   * @param address 
+   * @param address
    */
   public matchAddress(address: any) {
-    console.debug('matchAddress, got address', address);
     if (address) {
       this.fetchLatLong(address.geometry.location).then(detailedAddressResult => {
-        console.debug('matchAddress, got detailedAddress', detailedAddressResult);
         let detailedAddress = detailedAddressResult.results && detailedAddressResult.results[0] || null;
 
         let addressData: PagSeguroData = {

@@ -117,7 +117,7 @@ export class PagSeguroComponent implements OnInit {
     } else {
       this.initFormCard();
     }
-    console.debug('restoring form', this.paymentForm);
+    //console.debug('restoring form', this.paymentForm);
     this.pagSeguroService.setForm(this.paymentForm);
     this.pagSeguroService.restoreCheckoutData();
   }
