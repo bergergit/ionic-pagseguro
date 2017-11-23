@@ -66,7 +66,7 @@
             <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('card').get('installments').valid && paymentForm.get('card').get('installments').touched">Campo obrigatório</ion-note>
           </ion-label>
           <ion-select okText="OK" cancelText="Cancelar" formControlName="installments">
-            <ion-option *ngFor="let item of installments" [value]="item.quantity">{{ item.quantity }} x {{ item.installmentAmount | psCurrencyFormat:'BRL':true }}</ion-option>
+            <ion-option *ngFor="let item of installments" [value]="item.quantity">{{ item.quantity }} x {{ item.installmentAmount | currency:'BRL':'symbol-narrow' }}</ion-option>
           </ion-select>
         </ion-item>
 

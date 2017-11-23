@@ -2,15 +2,17 @@ import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PagSeguroComponent } from './pagseguro.component';
 import { PagSeguroService } from './pagseguro.service';
-import { PagseguroCurrencyFormatPipe } from './pagseguro.currency-format';
 import { IonicModule } from 'ionic-angular';
 import { Utils } from './utils';
+import ptBr from '@angular/common/locales/pt';
+import ptBrExtra from '@angular/common/locales/extra/pt';
+import { registerLocaleData, CurrencyPipe } from '@angular/common';
+registerLocaleData(ptBr, ptBrExtra);
 
 export * from './pagseguro.component'; 
 export * from './pagseguro.service';
 export * from './pagseguro.options'; 
 export * from './pagseguro.data';
-export * from './pagseguro.currency-format';
  
 @NgModule({
   imports: [
@@ -18,10 +20,10 @@ export * from './pagseguro.currency-format';
     IonicModule
   ],
   declarations: [
-    PagSeguroComponent,
-    PagseguroCurrencyFormatPipe
+    PagSeguroComponent
   ],
   providers: [
+    //CurrencyPipe,
     Utils
   ],
   exports: [
