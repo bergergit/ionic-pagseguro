@@ -39,7 +39,7 @@
               <img [src]="getCardImage()" padding-left>
             </ion-note>
           </ion-label>
-          <ion-input type="number" formControlName="cardNumber" [attr.maxlength]="16" (ionChange)="getBrand()"></ion-input>
+          <ion-input type="tel" maxlength="16" formControlName="cardNumber" [attr.maxlength]="16" (ionChange)="getBrand()"></ion-input>
         </ion-item>
 
         <ion-item>
@@ -78,7 +78,7 @@
               <ion-label stacked>Código de segurança
                 <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('card').get('cvv').valid && paymentForm.get('card').get('cvv').touched">Campo obrigatório</ion-note>
               </ion-label>
-              <ion-input type="number" formControlName="cvv" [attr.maxlength]="6"></ion-input>
+              <ion-input type="tel" maxlength="6" formControlName="cvv" [attr.maxlength]="6"></ion-input>
             </ion-item>
           </ion-col>
         </ion-row>
@@ -98,7 +98,7 @@
           <ion-label stacked>CPF do titular
             <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('card').get('cpf').valid && paymentForm.get('card').get('cpf').touched">Campo obrigatório</ion-note>
           </ion-label>
-          <ion-input type="text" formControlName="cpf"></ion-input>
+          <ion-input type="tel" formControlName="cpf" maxlength="11"></ion-input>
         </ion-item>
 
       </div>
@@ -118,7 +118,7 @@
         <ion-label stacked>Telefone do titular
           <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('phone').valid && paymentForm.get('phone').touched">Número inválido</ion-note>
         </ion-label>
-        <ion-input type="text" formControlName="phone"></ion-input>
+        <ion-input type="tel" formControlName="phone" maxlength="11"></ion-input>
       </ion-item>
 
       <h6 no-margin no-margin margin-top ion-text color="secondary">Endereço do titular do cartão</h6>
@@ -128,7 +128,7 @@
           <ion-label stacked>CEP
             <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('address').get('postalCode').valid && paymentForm.get('address').get('postalCode').touched">Campo inválido</ion-note>
           </ion-label>
-          <ion-input type="number" formControlName="postalCode" [attr.maxlength]="8" (change)="fetchZip(paymentForm.value.address.postalCode)"></ion-input>
+          <ion-input type="tel" maxlength="8" formControlName="postalCode" [attr.maxlength]="8" (change)="fetchZip(paymentForm.value.address.postalCode)"></ion-input>
         </ion-item>
 
         <ion-item>
@@ -142,7 +142,7 @@
           <ion-label stacked>Número
             <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('address').get('number').valid && paymentForm.get('address').get('number').touched">Campo obrigatório</ion-note>
           </ion-label>
-          <ion-input type="text" formControlName="number"></ion-input>
+          <ion-input type="text" maxlength="6" formControlName="number"></ion-input>
         </ion-item>
       </div>
 
@@ -154,7 +154,7 @@
         <ion-label stacked>Digite seu telefone
           <ion-note margin-left ion-text color="danger" *ngIf="!paymentForm.get('phone').valid && paymentForm.get('phone').touched">Número inválido</ion-note>
         </ion-label>
-        <ion-input type="text" formControlName="phone"></ion-input>
+        <ion-input type="tel" maxlength="11" formControlName="phone"></ion-input>
       </ion-item>
 
       <ion-item class="pagseguro-boleto">

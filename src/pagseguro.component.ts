@@ -80,7 +80,7 @@ export class PagSeguroComponent implements OnInit {
       });
     });
   }
-
+ 
   ngOnDestroy() {
     if (this.amountSubscription) {
       this.amountSubscription.unsubscribe();
