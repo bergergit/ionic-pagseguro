@@ -11,11 +11,11 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
-import { Platform } from 'ionic-angular/platform/platform';
+import { Platform } from 'ionic-angular';
  
 declare var PagSeguroDirectPayment: any;
 
-@Injectable()
+@Injectable() 
 export class PagSeguroService {
 
   //private ZIP_URL = 'https://viacep.com.br/ws';

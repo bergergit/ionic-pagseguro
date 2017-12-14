@@ -6,7 +6,7 @@ import moment from 'moment';
 import { Subscription } from 'rxjs/Subscription';
 import { Utils } from './utils';
 import { IMyDpOptions } from 'mydatepicker';
-import { Platform } from 'ionic-angular/platform/platform';
+import { Platform } from 'ionic-angular';
 
 declare var PagSeguroDirectPayment: any; 
   
