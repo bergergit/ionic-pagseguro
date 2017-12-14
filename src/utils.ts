@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ToastController, AlertController, Loading, LoadingController } from 'ionic-angular';
+import * as moment from 'moment';
+import { IMyDate } from 'mydatepicker';
 
 @Injectable()
 export class Utils {
@@ -34,6 +36,14 @@ export class Utils {
       position: 'bottom'
     });
     toast.present();
+  }
+
+  public pad(d: number) {
+    return (d < 10) ? '0' + d.toString() : d.toString();
+  }
+
+  public convertToDatePicker(date: moment.Moment): IMyDate {
+    return { year: date.year(), month: date.month() + 1, day: date.date() };
   }
 
   /**

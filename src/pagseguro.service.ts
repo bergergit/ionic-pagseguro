@@ -11,8 +11,8 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
-
-
+import { Platform } from 'ionic-angular/platform/platform';
+ 
 declare var PagSeguroDirectPayment: any;
 
 @Injectable()
@@ -32,7 +32,7 @@ export class PagSeguroService {
   private maxInstallmentNoInterest: number;
   installments: any;
 
-  constructor(private http: Http) {
+  constructor(private http: Http, public platform: Platform) {
     this.options = PagSeguroDefaultOptions;
     this.amountSource = new BehaviorSubject<number>(0);
     this.amount$ = this.amountSource.asObservable();
@@ -222,12 +222,17 @@ export class PagSeguroService {
    * Converte do formato ISO (yyyy-MM-dd) para o formato do PagSeguro que é: dd/MM/yyyy
    * @param isoDate 
    */
-  private convertIsoDate(isoDate): string {
-    var ptrn = /(\d{4})\-(\d{2})\-(\d{2})/;
-    if (!isoDate || !isoDate.match(ptrn)) {
-      return null;
+  private convertIsoDate(): string {
+    if (this.platform.is('core')) {
+      return this.paymentForm.value.mydpBirthdate.formatted;
+    } else {
+      let isoDate = this.paymentForm.value.ionBirthDate;
+      var ptrn = /(\d{4})\-(\d{2})\-(\d{2})/;
+      if (!isoDate || !isoDate.match(ptrn)) {
+        return null;
+      }
+      return isoDate.replace(ptrn, '$3/$2/$1');
     }
-    return isoDate.replace(ptrn, '$3/$2/$1');
   }
 
   /**
@@ -263,8 +268,8 @@ export class PagSeguroService {
         creditCard: {
           cardNumber: this.paymentForm.value.card.cardNumber,
           cvv: this.paymentForm.value.card.cvv,
-          expirationMonth: this.paymentForm.value.card.validity.substring(5),
-          expirationYear: this.paymentForm.value.card.validity.substring(0, 4),
+          expirationMonth: this.paymentForm.value.card.month,
+          expirationYear: this.paymentForm.value.card.year,
           billingAddress: this.paymentForm.value.address,
           installment: {
             quantity: this.paymentForm.value.card.installments,
@@ -283,7 +288,7 @@ export class PagSeguroService {
               areaCode: this.paymentForm.value.phone.substring(0, 2),
               number: this.paymentForm.value.phone.substring(2)
             },
-            birthDate: this.convertIsoDate(this.paymentForm.value.birthDate)
+            birthDate: this.convertIsoDate()
           }
         }
       }
@@ -324,6 +329,7 @@ export class PagSeguroService {
         return this._checkout(data);
       });
     } else {
+      data.sender.hash = PagSeguroDirectPayment.getSenderHash();
       return this._checkout(data);
     }
   }
@@ -334,17 +340,14 @@ export class PagSeguroService {
    * @param data
    */
   private _checkout(data: PagSeguroData): Promise<any> {
-    console.debug('invocando a API com os dados.', data);
-
+    //console.debug('invocando a API com os dados.', data);
     var headers = new Headers();
     headers.append('Content-Type', 'application/json');
     if (data.token) headers.append('Authorization', 'Bearer ' + data.token);
 
     let requestOptions = new RequestOptions({ headers: headers });
 
-    //return this.http.get(this.options.remoteApi.checkoutURL, requestOptions).map((res: Response) => res.json());
     return this.http.post(this.options.remoteApi.checkoutURL, JSON.stringify(data), requestOptions).toPromise();
-
   }
 
   /**

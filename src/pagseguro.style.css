@@ -1,5 +1,25 @@
 input:focus + .alert { display: none; }
 
+my-date-picker {
+    z-index: 20 !important;
+}
+.small-datepicker .mydp {
+    width: 202px !important;
+}
+.small-datepicker ion-label  {
+    margin: 0
+}
+.item.overflow {
+    contain:none;
+    overflow: visible;
+}
+.item.overflow * {
+    overflow: visible;
+}
+ion-grid ion-item.no-border .item-inner {
+    border-bottom: none !important;
+}
+
 .list-md .item-input:last-child {
     border-bottom: none;
 }

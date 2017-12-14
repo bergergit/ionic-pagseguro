@@ -3,15 +3,18 @@ import { PagSeguroService } from './pagseguro.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 //import * as moment from 'moment';
 import moment from 'moment';
-import {Subscription} from 'rxjs/Subscription';
+import { Subscription } from 'rxjs/Subscription';
+import { Utils } from './utils';
+import { IMyDpOptions } from 'mydatepicker';
+import { Platform } from 'ionic-angular/platform/platform';
 
-declare var PagSeguroDirectPayment: any;
- 
+declare var PagSeguroDirectPayment: any; 
+  
 @Component({
   selector: 'pagseguro-component',
   templateUrl: 'pagseguro.component.html',
   styleUrls: ['pagseguro.style.css']
-})
+}) 
 export class PagSeguroComponent implements OnInit {
  
   @Output() checkout:EventEmitter<string> = new EventEmitter();
@@ -24,26 +27,37 @@ export class PagSeguroComponent implements OnInit {
   public processing = false;
   installments: any;
   private amountSubscription: Subscription;
-  private amount: number;
+  private amount: number; 
 
   dateMax: string;
   dateMin: string;
+  expirationMonths: string[] = [];
+  expirationYears: string[] = [];
+
+  public myDatePickerOptions: IMyDpOptions; 
  
-  constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder) {
+  constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder, private utils: Utils, public platform: Platform) {
 
     this.dateMin = moment().format(this.DATE_FORMAT);
-    this.dateMax = moment().add(20, 'years').format(this.DATE_FORMAT);
-    
+    this.dateMax = moment().add(30, 'years').format(this.DATE_FORMAT);
+
+    this.myDatePickerOptions = {
+      editableDateField: false,
+      showTodayBtn: false,
+      openSelectorOnInputClick: true,
+      showClearDateBtn: false,
+    }
   }   
 
   ngOnInit() {  
     this.initFormCard(); 
+    this.initExpirationDates();
     this.pagSeguroService.setForm(this.paymentForm);
     this.pagSeguroService.restoreCheckoutData();
     this.amountSubscription = this.pagSeguroService.amount$.subscribe(amount => {
       this.amount = amount;
       this.fetchInstallments();
-    });
+    }); 
 
     // carrega o .js do PagSeguro
     this.pagSeguroService.loadScript().then(_ => {
@@ -73,6 +87,19 @@ export class PagSeguroComponent implements OnInit {
   }
 
   /**
+   * Adiciona os meses e anos de expiração
+   */
+  initExpirationDates() {
+    for (let month = 1; month <= 12; month++) {
+      this.expirationMonths.push(this.utils.pad(month));
+    }
+    for (let year = 0; year <= 30; year++) {
+      this.expirationYears.push(moment().add(year, 'years').format('YYYY'));
+    }
+
+  }
+
+  /**
    * Inicializar o FormGroup usado para recuperar as informações do usuário
    */
   initFormCard() {
@@ -82,7 +109,8 @@ export class PagSeguroComponent implements OnInit {
       card: this.formBuilder.group({
         cardNumber: ['', [Validators.required, Validators.maxLength(16)]],
         name: ['', [Validators.required]],
-        validity: ['', [Validators.required]],
+        month: ['', [Validators.required]],
+        year: ['', [Validators.required]],
         installments: ['', [Validators.required]],
         cvv: ['', [Validators.required, Validators.minLength(3)]],
         cpf: ['', [Validators.required]]
@@ -97,8 +125,8 @@ export class PagSeguroComponent implements OnInit {
         district: ['']
       }),
       phone: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(11)]],
-      birthDate: ['', [Validators.required]]
-
+      ionBirthDate: [moment().subtract(18, 'years').month(0).date(1).format(this.DATE_FORMAT)],
+      mydpBirthdate: [{ date: this.utils.convertToDatePicker(moment().subtract(18, 'years').month(0).date(1)) }]
     });
 
     
