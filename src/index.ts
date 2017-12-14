@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { PagSeguroComponent } from './pagseguro.component';
 import { PagSeguroService } from './pagseguro.service';
 import { IonicModule } from 'ionic-angular';
-import { Utils } from './utils';
 import ptBr from '@angular/common/locales/pt';
 import ptBrExtra from '@angular/common/locales/extra/pt';
 import { registerLocaleData } from '@angular/common';
@@ -25,7 +24,7 @@ export * from './pagseguro.data';
     PagSeguroComponent
   ],
   providers: [
-    Utils
+    
   ],
   exports: [
     PagSeguroComponent

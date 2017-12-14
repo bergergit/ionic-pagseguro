@@ -348,7 +348,7 @@ export class PagSeguroService {
     let requestOptions = new RequestOptions({ headers: headers });
 
     return this.http.post(this.options.remoteApi.checkoutURL, JSON.stringify(data), requestOptions).toPromise();
-  }
+  } 
 
   /**
    * Cria um Token para o cartão de crédito informado
@@ -363,7 +363,7 @@ export class PagSeguroService {
         expirationYear: data.creditCard.expirationYear,
         success: function (response) {
           resolve(response);
-        },
+        }, 
         error: function (response) {
           reject(response);
         }

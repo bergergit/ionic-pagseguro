@@ -4,9 +4,10 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 //import * as moment from 'moment';
 import moment from 'moment';
 import { Subscription } from 'rxjs/Subscription';
-import { Utils } from './utils';
+//import { Utils } from './utils';
 import { IMyDpOptions } from 'mydatepicker';
 import { Platform } from 'ionic-angular';
+import { IMyDate } from 'mydatepicker';
 
 declare var PagSeguroDirectPayment: any; 
   
@@ -36,7 +37,7 @@ export class PagSeguroComponent implements OnInit {
 
   public myDatePickerOptions: IMyDpOptions; 
  
-  constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder, private utils: Utils, public platform: Platform) {
+  constructor(private pagSeguroService: PagSeguroService, private formBuilder: FormBuilder, public platform: Platform) {
 
     this.dateMin = moment().format(this.DATE_FORMAT);
     this.dateMax = moment().add(30, 'years').format(this.DATE_FORMAT);
@@ -91,12 +92,15 @@ export class PagSeguroComponent implements OnInit {
    */
   initExpirationDates() {
     for (let month = 1; month <= 12; month++) {
-      this.expirationMonths.push(this.utils.pad(month));
+      this.expirationMonths.push(this.pad(month));
     }
     for (let year = 0; year <= 30; year++) {
       this.expirationYears.push(moment().add(year, 'years').format('YYYY'));
     }
+  }
 
+  public pad(d: number) {
+    return (d < 10) ? '0' + d.toString() : d.toString();
   }
 
   /**
@@ -126,11 +130,14 @@ export class PagSeguroComponent implements OnInit {
       }),
       phone: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(11)]],
       ionBirthDate: [moment().subtract(18, 'years').month(0).date(1).format(this.DATE_FORMAT)],
-      mydpBirthdate: [{ date: this.utils.convertToDatePicker(moment().subtract(18, 'years').month(0).date(1)) }]
+      mydpBirthdate: [{ date: this.convertToDatePicker(moment().subtract(18, 'years').month(0).date(1)) }]
     });
-
-    
   }
+
+  public convertToDatePicker(date: moment.Moment): IMyDate {
+    return { year: date.year(), month: date.month() + 1, day: date.date() };
+  }
+
 
   initFormBoleto() {
     this.paymentForm = this.formBuilder.group({
