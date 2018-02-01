@@ -259,6 +259,12 @@ export class PagSeguroService {
         phone: {
           areaCode: this.paymentForm.value.phone.substring(0, 2),
           number: this.paymentForm.value.phone.substring(2)
+        },
+        documents: {
+          document: {
+            type: 'CPF',
+            value: this.paymentForm.value.cpf || this.paymentForm.value.card.cpf
+          }
         }
       }
     }
@@ -295,6 +301,7 @@ export class PagSeguroService {
 
       data = Object.assign(data, cardData);
     }
+    
     return data;
   }
 
@@ -310,11 +317,19 @@ export class PagSeguroService {
     let data: PagSeguroData = this.buildPagSeguroData();
     data.sender.name = this.checkoutData.sender.name;
     data.sender.email = this.checkoutData.sender.email;
-    data.sender.documents = this.checkoutData.sender.documents;
+    
+
+    console.debug('built data',  data);
+    console.debug('checkoutData',  data);
 
     data = Object.assign(this.checkoutData, data);
 
+    
+
+    console.debug('built checkoutData after mix',  data);
+
     if (data.method === 'creditCard') {
+      //data.sender.documents = data.creditCard.holder.documents;
       // recupera o token do cartao de crédito
       data.sender.hash = PagSeguroDirectPayment.getSenderHash();
       return this.createCardToken(data).then(result => {
@@ -340,7 +355,7 @@ export class PagSeguroService {
    * @param data
    */
   private _checkout(data: PagSeguroData): Promise<any> {
-    //console.debug('invocando a API com os dados.', data);
+    console.debug('invocando a API com os dados.', data);
     var headers = new Headers();
     headers.append('Content-Type', 'application/json');
     if (data.token) headers.append('Authorization', 'Bearer ' + data.token);

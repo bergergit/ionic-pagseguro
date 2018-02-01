@@ -142,6 +142,7 @@ export class PagSeguroComponent implements OnInit {
   initFormBoleto() {
     this.paymentForm = this.formBuilder.group({
       paymentMethod: ['boleto'],
+      cpf: ['', [Validators.required]],
       phone: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(11)]]
     });
   }
