@@ -1,15 +1,16 @@
-<!-- <ion-row class="pagseguro" align-items-center *ngIf="!paymentMethods"> -->
-<!-- <ion-row class="pagseguro" align-items-center *ngIf="!sessionId">
+<!-- <ion-row class="pagseguro" align-items-center *ngIf="!sessionId"> -->
+
+<ion-row class="pagseguro" align-items-center *ngIf="!paymentMethods">
   <ion-col col-2 col-md-1>
     <ion-spinner></ion-spinner>
   </ion-col>
   <ion-col>
     <p>Carregando opções de pagamento...</p>
   </ion-col>
-</ion-row> -->
+</ion-row>
 
-<!-- <form [formGroup]="paymentForm" class="pagseguro" *ngIf="paymentMethods" no-padding no-margin margin-top> -->
-<form [formGroup]="paymentForm" class="pagseguro" no-padding no-margin margin-top>
+<form [formGroup]="paymentForm" class="pagseguro" *ngIf="paymentMethods" no-padding no-margin margin-top>
+<!-- <form [formGroup]="paymentForm" class="pagseguro" no-padding no-margin margin-top> -->
 
   <h5 margin-top ion-text color="secondary">Forma de pagamento</h5>
   <ion-segment color="primary" formControlName="paymentMethod" (ionChange)="paymentOptionChanged()">
