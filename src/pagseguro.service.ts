@@ -315,7 +315,13 @@ export class PagSeguroService {
    */
   public checkout(): Promise<any> {
     let data: PagSeguroData = this.buildPagSeguroData();
-    data.sender.name = this.checkoutData.sender.name;
+    
+    if (this.paymentForm && this.paymentForm.value.card && this.paymentForm.value.card.name) {
+      data.sender.name = this.paymentForm.value.card.name;
+    } else {
+      data.sender.name = this.checkoutData.sender.name;
+    }
+
     data.sender.email = this.checkoutData.sender.email;
     
 
