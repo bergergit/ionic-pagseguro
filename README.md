@@ -1,22 +1,14 @@
 # ionic-pagseguro
 
-## Installation
-
-Instalação:
+## Instalação
 
 ```bash
 $ npm install ionic-pagseguro --save
 ```
 
-## Consuming your library
+## Consumindo a biblioteca
 
-Once you have published your library to npm, you can import your library in any Angular application by running:
-
-```bash
-$ npm install ionic-pagseguro
-```
-
-and then from your Angular `AppModule`:
+No seu `AppModule`:
 
 ```typescript
 import { BrowserModule } from '@angular/platform-browser';
@@ -24,7 +16,7 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 
-// Import your library
+// Importe sua biblioteca
 import { PagSeguroComponent } from 'ionic-pagseguro';
 
 @NgModule({
@@ -34,8 +26,8 @@ import { PagSeguroComponent } from 'ionic-pagseguro';
   imports: [
     BrowserModule,
 
-    // Specify your library as an import
-    LibraryModule
+    // Especifique o móduglo do PagSeguro
+    PagSeguroModule
   ],
   providers: [],
   bootstrap: [AppComponent]
@@ -43,30 +35,86 @@ import { PagSeguroComponent } from 'ionic-pagseguro';
 export class AppModule { }
 ```
 
-Once your library is imported, you can use its components, directives and pipes in your Angular application:
+```typescript
+this.platform.ready().then(() => {
+  // Inicialize a biblioteca do PagSeguro bo seu app.component
+  this.pagSeguroService.setOptions({
+    scriptURL: 'https://stc.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js',
+    remoteApi: {
+      sessionURL: 'https://myapp.cloudfunctions.net/startSession',
+      checkoutURL: 'https://myapp.cloudfunctions.net/checkout'
+    } 
+  });
+}); 
 
-```xml
-<!-- You can now use your library component in app.component.html -->
+// pre-loading script
+setTimeout(() => {
+  this.pagSeguroService.loadScript();
+}, 1000);
+```
+
+<!-- Use a biblioteca no seu HTML. A função dentro do (checkout) será invocada quando o usuário clicar em Efetuar pagamento  -->
 <h1>
   {{title}}
 </h1>
-<sampleComponent></sampleComponent>
+<pagseguro-component (checkout)="checkout()"></pagseguro-component>
 ```
 
-## Development
+Você pode injetar o PagSeguroService no seu Component e definir alguns dados para ele, usando pagSeguroService.addCheckoutData:
+```typescript
+constructor(public pagSeguroService: PagSeguroService) {
+  this.setCheckoutItems();
+}
 
-To generate all `*.js`, `*.d.ts` and `*.metadata.json` files:
-
-```bash
-$ npm run build
+public setCheckoutItems() {
+  let itemsData: PagSeguroData = {
+    items: [{
+      item: {
+        id: '1234',
+        description: 'Meu produto'
+      }
+    }]
+  }
+  this.pagSeguroService.addCheckoutData(itemsData);
+}
 ```
 
-To lint all `*.ts` files:
+## API remota
+O PagSeguro recomenda que a sessão do usuário seja iniciado através de um servidor, por questões de segurança.
+Neste projeto, estou utilizando NodeJS via Firebase Cloud Functions. Você pode utilizar o que preferir.
 
-```bash
-$ npm run lint
+Abaixo, um exemplo de código para iniciar a session em NodeJS
+
+```typescript
+/**
+ * Inicia a sessao com o PagSeguro
+ */
+exports.startSession = functions.https.onRequest((req, res) => {
+    // Enable CORS using the `cors` express middleware.
+    cors(req, res, () => {
+        request.post({
+            url: functions.config().pagseguro.session_url,
+            qs: { email: functions.config().pagseguro.email, token: functions.config().pagseguro.token }
+        }, function result(err, httpResponse, body) {
+            if (err || httpResponse.statusCode !== 200) {
+                console.error('Start session error', err);
+                console.error('body', body);
+                res.status(httpResponse && httpResponse.statusCode || 500).send();
+                return;
+            }
+            res.status(200).send(parser.toJson(body));
+        });
+    });
+});
 ```
 
-## License
+## Documentação PagSeguro
+Esta biblioteca serve como base para realizar um checkout transparente do PagSeguro, utilizando Ionic.
+Possivelmente você precisará fazer modificações para o seu projeto.
+Toda a documentação do checkout transparente do PagSeguro está aqui: https://dev.pagseguro.uol.com.br/documentacao/pagamento-online/pagamentos/pagamento-transparente
+
+## Licença
+
+Você pode utilizar esta biblioteca como base para seu projeto, porém não pode modificá-la e redistribuí-la.
 
 MIT © [Fabio Berger](mailto:fabioberger@gmail.com)
