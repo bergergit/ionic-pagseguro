@@ -53,6 +53,7 @@ setTimeout(() => {
 }, 1000);
 ```
 
+```html
 <!-- Use a biblioteca no seu HTML. A função dentro do (checkout) será invocada quando o usuário clicar em Efetuar pagamento  -->
 <h1>
   {{title}}
