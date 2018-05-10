@@ -16,7 +16,7 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 
-// Importe sua biblioteca
+// Adicione o PagSeguroModule.forRoot() no seu app.module
 import { PagSeguroComponent } from 'ionic-pagseguro';
 
 @NgModule({
@@ -27,7 +27,7 @@ import { PagSeguroComponent } from 'ionic-pagseguro';
     BrowserModule,
 
     // Especifique o móduglo do PagSeguro
-    PagSeguroModule
+    PagSeguroModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]
@@ -35,6 +35,22 @@ import { PagSeguroComponent } from 'ionic-pagseguro';
 export class AppModule { }
 ```
 
+E PagSeguroModule.forChild() em todas as páginas que forem utilizar este módulo
+```typescript
+@NgModule({
+  declarations: [
+    MyPage,
+  ],
+  imports: [
+    IonicPageModule.forChild(MyPage),
+    PagSeguroModule.forChild()
+  ],
+  providers: [  ],
+  exports: [ MyPage ]
+})
+```
+
+Inicialize o carregamento do Javascript do PagSeguro. Recomendo fazer isso no app.component
 ```typescript
 this.platform.ready().then(() => {
   // Inicialize a biblioteca do PagSeguro bo seu app.component
